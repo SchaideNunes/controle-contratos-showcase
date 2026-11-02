@@ -1,0 +1,90 @@
+- recLatSol:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =0
+      Y: =0
+      Width: =220
+      Height: =Parent.Height
+      Fill: =corLateral
+- recLatSolBorda:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =219
+      Y: =0
+      Width: =1
+      Height: =Parent.Height
+      Fill: =corBorda
+- lblLatSolApp:
+    Control: Label@2.5.1
+    Properties:
+      X: =24
+      Y: =20
+      Width: =180
+      Height: =40
+      Text: ="Controle de Contratos"
+      Size: =14
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+- btnLatSolMinhas:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =14
+      Y: =76
+      Width: =192
+      Height: =44
+      Text: ="Minhas solicitações"
+      Align: =Align.Left
+      PaddingLeft: =14
+      Size: =11
+      FontWeight: =If(App.ActiveScreen.Name = "scrMinhas", FontWeight.Semibold, FontWeight.Normal)
+      Fill: =If(App.ActiveScreen.Name = "scrMinhas", corPrimaria, RGBA(0, 0, 0, 0))
+      HoverFill: =If(App.ActiveScreen.Name = "scrMinhas", corPrimaria, corColuna)
+      PressedFill: =corPrimariaClara
+      Color: =If(App.ActiveScreen.Name = "scrMinhas", Color.White, corTexto)
+      HoverColor: =Self.Color
+      BorderThickness: =0
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Navigate(scrMinhas, ScreenTransition.None)
+- btnLatSolVoltar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =14
+      Y: =Parent.Height - 116
+      Width: =192
+      Height: =44
+      Text: ="← Painel da equipe"
+      Align: =Align.Left
+      PaddingLeft: =14
+      Size: =11
+      Fill: =RGBA(0, 0, 0, 0)
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderThickness: =0
+      Visible: =nfEhEquipe
+      OnSelect: =Navigate(scrInicio, ScreenTransition.None)
+- btnLatSolNova:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =14
+      Y: =Parent.Height - 62
+      Width: =192
+      Height: =44
+      Text: ="Nova solicitação"
+      Size: =11
+      FontWeight: =FontWeight.Semibold
+      Fill: =If(App.ActiveScreen.Name = "scrNova", corPrimariaEsc, corPrimaria)
+      HoverFill: =corPrimariaEsc
+      PressedFill: =corPrimariaEsc
+      Color: =Color.White
+      HoverColor: =Color.White
+      BorderThickness: =0
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Navigate(scrNova, ScreenTransition.None)

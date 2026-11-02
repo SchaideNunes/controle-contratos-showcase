@@ -1,0 +1,138 @@
+==========================================================
+ ANEXOS DA scrNova — FORMULÁRIO "frmAnexo" (SUBSTITUI o attNova solto)
+==========================================================
+Por que: o controle de anexos solto não entrega o tipo que o SharePoint
+exige no Patch. Dentro de um formulário ele funciona. O formulário cria
+o item (com os anexos) e, em seguida, o app completa os outros campos.
+
+ANTES DE TUDO (Lists)
+----------------------------------------------------------
+Em SolicitacoesContrato, desligue "Exigir que esta coluna contenha
+informações" (Required) em TODAS as colunas, inclusive Title.
+O item é criado primeiro só com os anexos; o app já valida tudo
+antes de enviar (lblNvFaltando).
+
+PASSO 1 — Apagar o attNova solto
+----------------------------------------------------------
+Na árvore da scrNova, apague o controle attNova atual.
+
+PASSO 2 — Criar o formulário
+----------------------------------------------------------
+a) Insert > Edit form
+b) Renomeie para: frmAnexo
+c) DataSource = SolicitacoesContrato
+d) DefaultMode = FormMode.New
+e) No painel Fields, deixe SÓ "Attachments" (Anexos); remova os demais
+f) Propriedades do frmAnexo:
+     Fill = RGBA(0, 0, 0, 0)
+     BorderThickness = 0
+     Columns = 1
+     Visible = true
+g) Posição (coloca sobre o retângulo tracejado):
+     X      = conNvForm.X + 32
+     Y      = conNvForm.Y + 522
+     Width  = conNvForm.Width - 64
+     Height = conNvForm.Height - 522 - 18
+
+PASSO 3 — Ajustar o card e o controle de anexos
+----------------------------------------------------------
+Dentro do formulário, clique no card (Attachments):
+     Padding (Top/Bottom/Left/Right) = 0
+     Fill = RGBA(0, 0, 0, 0)
+Dentro do card:
+  - O rótulo do campo ("Attachments"): Visible = false
+  - O controle de anexos: renomeie para  attNova
+     MaxAttachments     = 10
+     AddAttachmentText  = "Adicionar arquivo"
+     NoAttachmentsText  = "Nenhum documento anexado"
+     BorderThickness    = 0
+     Fill               = RGBA(0, 0, 0, 0)
+     X = 0 ; Y = 0 ; Width = Parent.Width ; Height = Parent.Height
+Se o card ficar com altura pequena, ajuste Height do card para
+ = Parent.Height.
+
+PASSO 4 — Colar o 10_scrNova.yaml atualizado
+----------------------------------------------------------
+Só o btnNvEnviar e o btnNvCancelar mudaram. Cole o YAML como antes
+(apague os controles da tela, MENOS o frmAnexo, e cole).
+Se ficar escondido atrás do formulário principal:
+botão direito no frmAnexo > Reorder > Bring to front.
+
+PASSO 5 — frmAnexo.OnSuccess  (cole na propriedade OnSuccess)
+----------------------------------------------------------
+With(
+    {n: frmAnexo.LastSubmit, d: varNvDados},
+    With(
+        {cod: "SC-" & Year(Today()) & "-" & Text(n.ID, "0000")},
+        Patch(SolicitacoesContrato, n, {
+            Title: cod,
+            AreaSolicitante: {Value: d.area},
+            TipoDemanda: {Value: d.tipo},
+            Classificacao: {Value: d.classe},
+            FiscalServico: If(d.fiscalNA, Blank(), {
+                Claims: "i:0#.f|membership|" & d.fiscalMail,
+                DisplayName: d.fiscalNome,
+                Email: d.fiscalMail,
+                Department: "",
+                JobTitle: "",
+                Picture: ""
+            }),
+            Descricao: d.desc,
+            PrazoSolicitado: d.prazo,
+            JustificativaPrazo: {Value: d.just},
+            Prioridade: {Value: d.prio},
+            Solicitante: nfEuPessoa,
+            DataRecebimento: Now(),
+            Status: {Value: "Nova"}
+        });
+        Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+            Title: "Solicitação criada",
+            SolicitacaoID: n.ID,
+            Acao: {Value: "Criada"},
+            Usuario: nfEuPessoa,
+            DataHora: Now()
+        });
+        ForAll(Filter(nfEquipe, PapelTxt = "Coordenador"),
+            Office365Outlook.SendEmailV2(
+                ThisRecord.Email,
+                If(d.prio = "Crítica - P0", "[CRÍTICA] ", "") & "Nova solicitação: " & cod & " · " & d.desc,
+                "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                "<p>Chegou uma nova solicitação no Controle de Contratos:</p>" &
+                "<table style='border-collapse:collapse'>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Código</td><td>" & cod & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Solicitante</td><td>" & User().FullName & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Área</td><td>" & d.area & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Tipo</td><td>" & d.tipo & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Classificação</td><td>" & d.classe & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Fiscal</td><td>" & If(d.fiscalNA, "N/A", d.fiscalNome) & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Descrição</td><td>" & d.desc & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Prazo desejado</td><td>" & Text(d.prazo, "dd/mm/yyyy") & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Justificativa</td><td>" & d.just & "</td></tr>" &
+                "<tr><td style='padding:4px 16px 4px 0;color:#5F6B76'>Prioridade</td><td>" & d.prio & "</td></tr>" &
+                "</table><p>Ela já está na Caixa de entrada do app.</p></div>"
+            )
+        );
+        Notify("Solicitação " & cod & " enviada", NotificationType.Success)
+    )
+);
+Refresh(SolicitacoesContrato);
+Reset(cbNvTipo); Reset(txtNvTipoOutro); Reset(cbNvArea); Reset(txtNvAreaOutra);
+Reset(cbNvFiscal); Reset(chkNvFiscalNA);
+Reset(txtNvDesc); Reset(dpNvPrazo); Reset(txtNvJust);
+ResetForm(frmAnexo);
+Set(varNvPrio, Blank()); Set(varNvClass, Blank());
+Set(varNvTipoOutro, false); Set(varNvAreaOutra, false);
+Set(varNvEnviando, false);
+Navigate(scrMinhas, ScreenTransition.None)
+
+PASSO 6 — frmAnexo.OnFailure
+----------------------------------------------------------
+Set(varNvEnviando, false);
+Notify("Não foi possível enviar os anexos. Tente de novo.", NotificationType.Error)
+
+OBSERVAÇÕES
+----------------------------------------------------------
+- Se a lblNvFaltando acusar "Pelo menos um documento anexado" mesmo
+  com arquivo, confira se o controle dentro do card se chama attNova.
+- Se o formulário ficar com a aparência de formulário (bordas, cartão),
+  aumente o Height do card e zere Padding/BorderThickness.

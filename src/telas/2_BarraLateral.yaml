@@ -1,0 +1,126 @@
+- recLateral:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =0
+      Y: =0
+      Width: =220
+      Height: =Parent.Height
+      Fill: =corLateral
+- recLateralBorda:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =219
+      Y: =0
+      Width: =1
+      Height: =Parent.Height
+      Fill: =corBorda
+- lblNomeApp:
+    Control: Label@2.5.1
+    Properties:
+      X: =24
+      Y: =20
+      Width: =180
+      Height: =40
+      Text: ="Controle de Contratos"
+      Size: =14
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+- galMenu:
+    Control: Gallery@2.15.0
+    Variant: Vertical
+    Properties:
+      X: =14
+      Y: =76
+      Width: =192
+      Height: =6 * 48
+      TemplateSize: =46
+      TemplatePadding: =1
+      ShowScrollbar: =false
+      Items: =nfMenu
+    Children:
+      - btnMenu:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth
+            Height: =44
+            Text: =ThisItem.Nome
+            Align: =Align.Left
+            PaddingLeft: =14
+            Size: =11
+            FontWeight: =If(App.ActiveScreen.Name = ThisItem.Tela, FontWeight.Semibold, FontWeight.Normal)
+            Fill: =If(App.ActiveScreen.Name = ThisItem.Tela, corPrimaria, RGBA(0, 0, 0, 0))
+            HoverFill: =If(App.ActiveScreen.Name = ThisItem.Tela, corPrimaria, corColuna)
+            PressedFill: =corPrimariaClara
+            Color: =If(App.ActiveScreen.Name = ThisItem.Tela, Color.White, corTexto)
+            HoverColor: =If(App.ActiveScreen.Name = ThisItem.Tela, Color.White, corTexto)
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            OnSelect: |-
+              =Switch(ThisItem.Tela,
+                  "scrInicio", Navigate(scrInicio, ScreenTransition.None),
+                  "scrCaixa", Navigate(scrCaixa, ScreenTransition.None),
+                  "scrQuadro", Navigate(scrQuadro, ScreenTransition.None),
+                  "scrDistribuicao", Navigate(scrDistribuicao, ScreenTransition.None),
+                  "scrTodas", Navigate(scrTodas, ScreenTransition.None),
+                  "scrIndicadores", Navigate(scrIndicadores, ScreenTransition.None)
+              )
+      - lblMenuBadge:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.TemplateWidth - 42
+            Y: =12
+            Width: =30
+            Height: =20
+            Align: =Align.Center
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Text: =ThisItem.Badge
+            Fill: =If(App.ActiveScreen.Name = ThisItem.Tela, Color.White, corPrimaria)
+            Color: =If(App.ActiveScreen.Name = ThisItem.Tela, corPrimariaEsc, Color.White)
+            Visible: =ThisItem.Badge > 0
+            OnSelect: =Select(Parent)
+- btnConfiguracoes:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =14
+      Y: =Parent.Height - 116
+      Width: =192
+      Height: =44
+      Text: ="Configurações"
+      Align: =Align.Left
+      PaddingLeft: =14
+      Size: =11
+      Fill: =RGBA(0, 0, 0, 0)
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderThickness: =0
+      Visible: =nfPapel = "Coordenador"
+      OnSelect: =Notify("Em breve", NotificationType.Information)
+- btnNovaSolicitacao:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =14
+      Y: =Parent.Height - 62
+      Width: =192
+      Height: =44
+      Text: ="Nova solicitação"
+      Size: =11
+      FontWeight: =FontWeight.Semibold
+      Fill: =corPrimaria
+      HoverFill: =corPrimariaEsc
+      PressedFill: =corPrimariaEsc
+      Color: =Color.White
+      HoverColor: =Color.White
+      BorderThickness: =0
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Navigate(scrNova, ScreenTransition.None)

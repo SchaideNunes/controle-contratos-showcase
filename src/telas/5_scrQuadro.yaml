@@ -1,0 +1,885 @@
+- lblQdTitulo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =16
+      Width: =600
+      Height: =36
+      Size: =17
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+      Text: ="Quadro de solicitações"
+- lblQdSub:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =50
+      Width: =800
+      Height: =22
+      Size: =9
+      Color: =corSuave
+      Text: |-
+        =CountRows(Filter(nfSol, !Fechada)) & " em aberto  ·  " &
+        CountRows(Filter(nfSol, Atrasada)) & " atrasadas  ·  " &
+        CountRows(Filter(nfSol, !Fechada && RespNome = "Sem responsável")) & " sem responsável"
+- btnQdAtualizar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =24
+      Width: =120
+      Height: =36
+      Text: ="Atualizar"
+      Size: =10
+      Fill: =Color.White
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderColor: =corBordaForte
+      BorderThickness: =1
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Refresh(SolicitacoesContrato); Refresh(HistoricoSolicitacoes)
+- recQdLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =84
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- txtQdBusca:
+    Control: Classic/TextInput@2.3.2
+    Properties:
+      X: =252
+      Y: =98
+      Width: =380
+      Height: =38
+      Default: =""
+      HintText: ="Buscar por descrição, código, solicitante ou responsável"
+      DelayOutput: =true
+      Size: =10
+      Fill: =Color.White
+      BorderColor: =corBorda
+      RadiusTopLeft: =4
+      RadiusTopRight: =4
+      RadiusBottomLeft: =4
+      RadiusBottomRight: =4
+- cbQdTipo:
+    Control: Classic/ComboBox@2.4.0
+    Properties:
+      X: =644
+      Y: =98
+      Width: =200
+      Height: =38
+      Items: =Sort(Distinct(nfSol, TipoTxt), Value)
+      SelectMultiple: =false
+      IsSearchable: =false
+      InputTextPlaceholder: ="Todos os tipos"
+      DefaultSelectedItems: =Blank()
+      Size: =10
+      BorderColor: =corBorda
+- cbQdPrio:
+    Control: Classic/ComboBox@2.4.0
+    Properties:
+      X: =856
+      Y: =98
+      Width: =200
+      Height: =38
+      Items: =["Crítica - P0", "Alta - P1", "Média - P2", "Baixa - P3"]
+      SelectMultiple: =false
+      IsSearchable: =false
+      InputTextPlaceholder: ="Todas as prioridades"
+      DefaultSelectedItems: =Blank()
+      Size: =10
+      BorderColor: =corBorda
+- tglQdMinhas:
+    Control: Classic/Toggle@2.1.0
+    Properties:
+      X: =1072
+      Y: =102
+      Width: =50
+      Height: =30
+      Default: =false
+      ShowLabel: =false
+      TrueFill: =corPrimaria
+      FalseFill: =corBordaForte
+      HandleFill: =Color.White
+- lblQdMinhas:
+    Control: Label@2.5.1
+    Properties:
+      X: =1126
+      Y: =98
+      Width: =140
+      Height: =38
+      Size: =10
+      Color: =corTexto
+      Text: ="Só as minhas"
+- galQdColunas:
+    Control: Gallery@2.15.0
+    Variant: Horizontal
+    Properties:
+      X: =252
+      Y: =150
+      Width: =Parent.Width - 252 - 18
+      Height: =Parent.Height - 150 - 16
+      TemplateSize: =Self.Width / 4
+      TemplatePadding: =0
+      ShowScrollbar: =false
+      Items: |-
+        =Table(
+            {Nome: "Novas", Cor: ColorValue("#B7791F"), Vazio: "Nenhuma solicitação nova"},
+            {Nome: "Em andamento", Cor: ColorValue("#4A6982"), Vazio: "Nada em andamento"},
+            {Nome: "Aguardando", Cor: ColorValue("#0E7490"), Vazio: "Nada aguardando"},
+            {Nome: "Concluídas", Cor: ColorValue("#2F855A"), Vazio: "Nenhuma concluída nos últimos 30 dias"}
+        )
+    Children:
+      - recQdColFundo:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth - 14
+            Height: =Parent.TemplateHeight
+            Fill: =corColuna
+      - cirQdColCor:
+          Control: Circle@2.3.0
+          Properties:
+            X: =16
+            Y: =18
+            Width: =9
+            Height: =9
+            Fill: =ThisItem.Cor
+      - lblQdColNome:
+          Control: Label@2.5.1
+          Properties:
+            X: =32
+            Y: =6
+            Width: =Parent.TemplateWidth - 100
+            Height: =32
+            Size: =11
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =ThisItem.Nome
+      - lblQdColQtd:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.TemplateWidth - 14 - 50
+            Y: =10
+            Width: =38
+            Height: =24
+            Align: =Align.Center
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Fill: =Color.White
+            Color: =corTexto
+            Text: =CountRows(galQdCards.AllItems)
+      - galQdCards:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =10
+            Y: =44
+            Width: =Parent.TemplateWidth - 34
+            Height: =Parent.TemplateHeight - 52
+            TemplateSize: =122
+            TemplatePadding: =0
+            Items: |-
+              =With(
+                  {
+                      base: Filter(nfSol,
+                          Coluna = ThisItem.Nome,
+                          IsBlank(cbQdTipo.Selected.Value) || TipoTxt = cbQdTipo.Selected.Value,
+                          IsBlank(cbQdPrio.Selected.Value) || PrioTxt = cbQdPrio.Selected.Value,
+                          !tglQdMinhas.Value || RespEmail = nfEu,
+                          IsBlank(txtQdBusca.Text) ||
+                              txtQdBusca.Text in Desc || txtQdBusca.Text in Codigo ||
+                              txtQdBusca.Text in SolNome || txtQdBusca.Text in RespNome
+                      )
+                  },
+                  If(ThisItem.Nome = "Concluídas",
+                      SortByColumns(Filter(base, DtConcl >= DateAdd(Today(), -30, TimeUnit.Days)), "DtConcl", SortOrder.Descending),
+                      SortByColumns(base, "DiasAtraso", SortOrder.Descending, "OrdemPrio", SortOrder.Ascending)
+                  )
+              )
+            OnSelect: |-
+              =Set(varQd, ThisItem);
+              Set(varQdPode, nfPapel = "Coordenador" || ThisItem.RespEmail = nfEu);
+              Reset(txtQdMsg);
+              Reset(dpQdPrazo);
+              Reset(txtQdMotivoPrazo);
+              Set(varQdPainel, true)
+          Children:
+            - recQdCard:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 10
+                  Fill: =Color.White
+                  BorderColor: =ColorValue("#DDE3E8")
+                  BorderThickness: =1
+                  OnSelect: =Select(Parent)
+            - recQdCardAtr:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =3
+                  Height: =Parent.TemplateHeight - 10
+                  Fill: =corVermelho
+                  Visible: =ThisItem.Atrasada
+                  OnSelect: =Select(Parent)
+            - btnQdCardPrio:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =12
+                  Y: =10
+                  Width: =74
+                  Height: =20
+                  Text: =ThisItem.PrioRotulo
+                  Size: =8
+                  FontWeight: =FontWeight.Semibold
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  Color: =ThisItem.PrioCor
+                  HoverColor: =Self.Color
+                  Fill: =ThisItem.PrioFundo
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  BorderThickness: =0
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  OnSelect: =Select(Parent)
+            - lblQdCardPrazo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =90
+                  Y: =8
+                  Width: =Parent.TemplateWidth - 100
+                  Height: =24
+                  Align: =Align.Right
+                  Size: =8
+                  FontWeight: =If(ThisItem.Atrasada || ThisItem.Coluna = "Concluídas", FontWeight.Semibold, FontWeight.Normal)
+                  Color: |-
+                    =If(ThisItem.Coluna = "Concluídas", If(ThisItem.NoPrazo, corVerde, corVermelho),
+                        ThisItem.Atrasada, corVermelho,
+                        DateDiff(Today(), ThisItem.DtPrazo, TimeUnit.Days) <= 3, corAmbar,
+                        corSuave)
+                  Text: |-
+                    =If(ThisItem.Coluna = "Concluídas",
+                        If(ThisItem.NoPrazo, "No prazo · ", "Após o prazo · ") & Text(ThisItem.DtConcl, "dd/mm"),
+                        ThisItem.Atrasada,
+                        "Atrasada " & ThisItem.DiasAtraso & " dia(s) · " & Text(ThisItem.DtPrazo, "dd/mm"),
+                        DateDiff(Today(), ThisItem.DtPrazo, TimeUnit.Days) <= 3,
+                        "Vence em " & DateDiff(Today(), ThisItem.DtPrazo, TimeUnit.Days) & " dia(s) · " & Text(ThisItem.DtPrazo, "dd/mm"),
+                        "Vence " & Text(ThisItem.DtPrazo, "dd/mm"))
+                  OnSelect: =Select(Parent)
+            - lblQdCardTitulo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =34
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =22
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =Upper(ThisItem.Desc)
+                  OnSelect: =Select(Parent)
+            - lblQdCardMeta:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =56
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =20
+                  Size: =8
+                  Color: =If(ThisItem.Coluna = "Aguardando", corAzulAgua, corSuave)
+                  Text: |-
+                    =If(ThisItem.Coluna = "Aguardando",
+                        ThisItem.StatusTxt & If(IsBlank(ThisItem.MotivoAguardando), "", ": " & ThisItem.MotivoAguardando),
+                        ThisItem.Codigo & " · " & ThisItem.TipoTxt & " · " & ThisItem.AreaTxt)
+                  OnSelect: =Select(Parent)
+            - recQdCardSep:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =12
+                  Y: =80
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =1
+                  Fill: =ColorValue("#EEF1F3")
+                  OnSelect: =Select(Parent)
+            - btnQdCardAvatar:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =12
+                  Y: =87
+                  Width: =22
+                  Height: =22
+                  Text: =If(ThisItem.RespNome = "Sem responsável", "?", Upper(Left(ThisItem.RespNome, 1) & Left(Last(Split(ThisItem.RespNome, " ")).Value, 1)))
+                  Size: =7
+                  FontWeight: =FontWeight.Bold
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  Fill: =If(ThisItem.RespNome = "Sem responsável", corVermelhoBg, corPrimariaClara)
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  Color: =If(ThisItem.RespNome = "Sem responsável", corVermelho, corPrimariaEsc)
+                  HoverColor: =Self.Color
+                  BorderThickness: =0
+                  RadiusTopLeft: =11
+                  RadiusTopRight: =11
+                  RadiusBottomLeft: =11
+                  RadiusBottomRight: =11
+                  OnSelect: =Select(Parent)
+            - lblQdCardResp:
+                Control: Label@2.5.1
+                Properties:
+                  X: =40
+                  Y: =84
+                  Width: =Parent.TemplateWidth - 52
+                  Height: =28
+                  Size: =8
+                  Italic: =ThisItem.RespNome = "Sem responsável"
+                  Color: =If(ThisItem.RespNome = "Sem responsável", corVermelho, corTextoMedio)
+                  Text: =ThisItem.RespNome & "  ·  pedido por " & ThisItem.SolNome
+                  OnSelect: =Select(Parent)
+      - lblQdColVazio:
+          Control: Label@2.5.1
+          Properties:
+            X: =10
+            Y: =60
+            Width: =Parent.TemplateWidth - 34
+            Height: =40
+            Align: =Align.Center
+            Size: =9
+            Color: =corSuave
+            Text: =ThisItem.Vazio
+            Visible: =CountRows(galQdCards.AllItems) = 0
+- recQdFundo:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =RGBA(23, 33, 43, 0.35)
+      Visible: =varQdPainel
+      OnSelect: =Set(varQdPainel, false)
+- conQdPainel:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =Parent.Width - 480
+      Y: =0
+      Width: =480
+      Height: =Parent.Height
+      Fill: =Color.White
+      DropShadow: =DropShadow.ExtraBold
+      Visible: =varQdPainel
+    Children:
+      - lblPnCodigo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =16
+            Width: =110
+            Height: =24
+            Size: =9
+            Color: =corSuave
+            Text: =varQd.Codigo
+      - btnPnStatus:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =130
+            Y: =17
+            Width: =160
+            Height: =22
+            Text: =varQd.StatusTxt
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: |-
+              =Switch(varQd.Coluna, "Novas", ColorValue("#7A4F0A"), "Em andamento", corPrimariaEsc, "Aguardando", corAzulAgua, "Concluídas", corVerde, corTextoMedio)
+            HoverColor: =Self.Color
+            Fill: |-
+              =Switch(varQd.Coluna, "Novas", corAmbarBg, "Em andamento", ColorValue("#DDE6EE"), "Aguardando", corAzulAguaBg, "Concluídas", ColorValue("#E3F1E8"), ColorValue("#E3E8EC"))
+            HoverFill: =Self.Fill
+            PressedFill: =Self.Fill
+            BorderThickness: =0
+            RadiusTopLeft: =11
+            RadiusTopRight: =11
+            RadiusBottomLeft: =11
+            RadiusBottomRight: =11
+      - icoPnFechar:
+          Control: Classic/Icon@2.5.0
+          Properties:
+            X: =Parent.Width - 52
+            Y: =14
+            Width: =30
+            Height: =30
+            PaddingTop: =6
+            PaddingBottom: =6
+            PaddingLeft: =6
+            PaddingRight: =6
+            Icon: =Icon.Cancel
+            Color: =corSuave
+            OnSelect: =Set(varQdPainel, false)
+      - lblPnTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =44
+            Width: =Parent.Width - 48
+            Height: =30
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =varQd.Desc
+      - lblPnMeta:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =72
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =8
+            Color: =If(varQd.Atrasada, corVermelho, corSuave)
+            Text: |-
+              =If(varQd.Atrasada, "Atrasada há " & varQd.DiasAtraso & " dia(s)  ·  ", "") &
+              varQd.TipoTxt & "  ·  " & varQd.AreaTxt
+      - htmlPnDados:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            X: =14
+            Y: =96
+            Width: =Parent.Width - 28
+            Height: =196
+            HtmlText: |-
+              ="<div style='font-family:Segoe UI,sans-serif;font-size:12px;color:#1F2933'><table style='width:100%;border-collapse:collapse'>" &
+              Concat(
+                  Table(
+                      {k: "Solicitante", v: varQd.SolNome},
+                      {k: "Fiscal", v: varQd.FiscalNome},
+                      {k: "Classificação", v: varQd.ClassTxt},
+                      {k: "Responsável", v: varQd.RespNome},
+                      {k: "Prioridade", v: varQd.PrioTxt},
+                      {k: "Prazo", v: Text(varQd.DtPrazo, "dd/mm/yyyy") & If(!IsBlank(varQd.PrazoAcordado) && varQd.PrazoAcordado <> varQd.PrazoSolicitado, "  (pedido: " & Text(varQd.PrazoSolicitado, "dd/mm/yyyy") & ")", "")},
+                      {k: "Recebida em", v: Text(varQd.DtReceb, "dd/mm/yyyy")},
+                      {k: "Justificativa", v: varQd.JustifTxt},
+                      {k: "Orientação", v: varQd.Orientacao},
+                      {k: "Aguardando", v: varQd.MotivoAguardando},
+                      {k: "Concluída em", v: Text(varQd.DtConcl, "dd/mm/yyyy")}
+                  ),
+                  If(IsBlank(v), "",
+                      "<tr><td style='padding:5px 0;color:#5F6B76;width:32%;vertical-align:top;border-bottom:1px solid #EEF1F3'>" & k &
+                      "</td><td style='padding:5px 0;border-bottom:1px solid #EEF1F3'>" & v & "</td></tr>")
+              ) &
+              "</table></div>"
+      - lblPnSomenteLeitura:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =300
+            Width: =Parent.Width - 48
+            Height: =44
+            Size: =9
+            Color: =corSuave
+            Fill: =ColorValue("#F5F7F9")
+            PaddingLeft: =12
+            Text: ="Só o responsável ou a coordenação podem alterar esta solicitação."
+            Visible: =!varQdPode
+      - lblPnRotStatus:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =300
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="MUDAR STATUS"
+            Visible: =varQdPode && varQd.Coluna <> "Novas"
+      - btnPnAndamento:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24
+            Y: =322
+            Width: =(Parent.Width - 48 - 16) / 3
+            Height: =36
+            Text: ="Em andamento"
+            Size: =9
+            Fill: =If(varQd.StatusTxt = "Em andamento", ColorValue("#DDE6EE"), Color.White)
+            HoverFill: =corColuna
+            PressedFill: =corPrimariaClara
+            Color: =corTexto
+            HoverColor: =corTexto
+            BorderColor: =corBordaForte
+            BorderThickness: =1
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =varQdPode && varQd.Coluna <> "Novas"
+            DisplayMode: =If(varQd.StatusTxt = "Em andamento", DisplayMode.View, DisplayMode.Edit)
+            OnSelect: |-
+              =With({s: LookUp(SolicitacoesContrato, ID = varQd.ID)},
+                  Patch(SolicitacoesContrato, s, {
+                      Status: {Value: "Em andamento"},
+                      ResponsavelProximaAcao: s.Responsavel,
+                      DataConclusao: Blank()
+                  })
+              );
+              Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                  Title: "Status alterado para Em andamento",
+                  SolicitacaoID: varQd.ID,
+                  Acao: {Value: "Status alterado"},
+                  CampoAlterado: "Status",
+                  ValorAnterior: varQd.StatusTxt,
+                  ValorNovo: "Em andamento",
+                  Usuario: nfEuPessoa,
+                  DataHora: Now()
+              });
+              Refresh(SolicitacoesContrato);
+              Set(varQd, LookUp(nfSol, ID = varQd.ID));
+              Notify("Status atualizado", NotificationType.Success)
+      - btnPnAguardando:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24 + (Parent.Width - 48 - 16) / 3 + 8
+            Y: =322
+            Width: =(Parent.Width - 48 - 16) / 3
+            Height: =36
+            Text: ="Aguardando"
+            Size: =9
+            Fill: =If(varQd.Coluna = "Aguardando", corAzulAguaBg, Color.White)
+            HoverFill: =corColuna
+            PressedFill: =corPrimariaClara
+            Color: =corTexto
+            HoverColor: =corTexto
+            BorderColor: =corBordaForte
+            BorderThickness: =1
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Tooltip: ="Escreva no campo de mensagem o que está faltando. O solicitante recebe por e-mail."
+            Visible: =varQdPode && varQd.Coluna <> "Novas"
+            DisplayMode: =If(IsBlank(Trim(txtQdMsg.Text)) || varQd.Coluna = "Aguardando", DisplayMode.Disabled, DisplayMode.Edit)
+            DisabledFill: =If(varQd.Coluna = "Aguardando", corAzulAguaBg, ColorValue("#F5F7F9"))
+            DisabledColor: =corSuave
+            OnSelect: |-
+              =With({s: LookUp(SolicitacoesContrato, ID = varQd.ID), msg: Trim(txtQdMsg.Text)},
+                  Patch(SolicitacoesContrato, s, {
+                      Status: {Value: "Aguardando solicitante"},
+                      MotivoAguardando: Left(msg, 255),
+                      ResponsavelProximaAcao: s.Solicitante
+                  });
+                  Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                      Title: "Aguardando solicitante",
+                      SolicitacaoID: varQd.ID,
+                      Acao: {Value: "Status alterado"},
+                      CampoAlterado: "Status",
+                      ValorAnterior: varQd.StatusTxt,
+                      ValorNovo: "Aguardando solicitante",
+                      Mensagem: msg,
+                      Usuario: nfEuPessoa,
+                      DataHora: Now()
+                  });
+                  If(!IsBlank(varQd.SolEmail),
+                      Office365Outlook.SendEmailV2(
+                          varQd.SolEmail,
+                          "Precisamos de informações: " & varQd.Codigo & " · " & varQd.Desc,
+                          "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                          "<p>Olá, " & First(Split(varQd.SolNome, " ")).Value & ".</p>" &
+                          "<p>Para continuar sua solicitação <b>" & varQd.Codigo & " · " & varQd.Desc & "</b>, precisamos de:</p>" &
+                          "<p style='background:#F5F7F9;padding:12px;border-radius:6px'>" & Substitute(msg, Char(10), "<br>") & "</p>" &
+                          "<p>Basta responder este e-mail.</p>" &
+                          "<p style='color:#5F6B76'>" & User().FullName & "<br>Coordenação de Contratos</p></div>"
+                      )
+                  )
+              );
+              Reset(txtQdMsg);
+              Refresh(SolicitacoesContrato);
+              Refresh(HistoricoSolicitacoes);
+              Set(varQd, LookUp(nfSol, ID = varQd.ID));
+              Notify("Solicitante avisado", NotificationType.Success)
+      - btnPnConcluir:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24 + 2 * ((Parent.Width - 48 - 16) / 3 + 8)
+            Y: =322
+            Width: =(Parent.Width - 48 - 16) / 3
+            Height: =36
+            Text: ="Concluir"
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Fill: =corVerde
+            HoverFill: =ColorFade(corVerde, -15%)
+            PressedFill: =ColorFade(corVerde, -25%)
+            Color: =Color.White
+            HoverColor: =Color.White
+            DisabledFill: =ColorValue("#E3F1E8")
+            DisabledColor: =corVerde
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =varQdPode && varQd.Coluna <> "Novas"
+            DisplayMode: =If(varQd.StatusTxt = "Concluída", DisplayMode.Disabled, DisplayMode.Edit)
+            OnSelect: |-
+              =With({s: LookUp(SolicitacoesContrato, ID = varQd.ID), msg: Trim(txtQdMsg.Text)},
+                  Patch(SolicitacoesContrato, s, {
+                      Status: {Value: "Concluída"},
+                      DataConclusao: Now(),
+                      MotivoAguardando: ""
+                  });
+                  Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                      Title: "Solicitação concluída",
+                      SolicitacaoID: varQd.ID,
+                      Acao: {Value: "Status alterado"},
+                      CampoAlterado: "Status",
+                      ValorAnterior: varQd.StatusTxt,
+                      ValorNovo: "Concluída",
+                      Mensagem: msg,
+                      Usuario: nfEuPessoa,
+                      DataHora: Now()
+                  });
+                  If(!IsBlank(varQd.SolEmail),
+                      Office365Outlook.SendEmailV2(
+                          varQd.SolEmail,
+                          "Solicitação concluída: " & varQd.Codigo & " · " & varQd.Desc,
+                          "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                          "<p>Olá, " & First(Split(varQd.SolNome, " ")).Value & ".</p>" &
+                          "<p>Sua solicitação <b>" & varQd.Codigo & " · " & varQd.Desc & "</b> foi concluída em " & Text(Today(), "dd/mm/yyyy") & ".</p>" &
+                          If(IsBlank(msg), "", "<p style='background:#F5F7F9;padding:12px;border-radius:6px'>" & Substitute(msg, Char(10), "<br>") & "</p>") &
+                          "<p style='color:#5F6B76'>" & User().FullName & "<br>Coordenação de Contratos</p></div>"
+                      )
+                  )
+              );
+              Reset(txtQdMsg);
+              Refresh(SolicitacoesContrato);
+              Refresh(HistoricoSolicitacoes);
+              Set(varQd, LookUp(nfSol, ID = varQd.ID));
+              Notify("Concluída. O solicitante foi avisado por e-mail", NotificationType.Success)
+      - btnPnTriar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24
+            Y: =300
+            Width: =Parent.Width - 48
+            Height: =40
+            Text: ="Ir para a caixa de entrada para triar"
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Fill: =corPrimaria
+            HoverFill: =corPrimariaEsc
+            PressedFill: =corPrimariaEsc
+            Color: =Color.White
+            HoverColor: =Color.White
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =varQdPode && varQd.Coluna = "Novas"
+            OnSelect: =Set(varQdPainel, false); Navigate(scrCaixa, ScreenTransition.None)
+      - lblPnRotMsg:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =372
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="MENSAGEM AO SOLICITANTE (" & Upper(varQd.SolNome) & ")"
+            Visible: =varQdPode && varQd.Coluna <> "Novas"
+      - txtQdMsg:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =24
+            Y: =394
+            Width: =Parent.Width - 48
+            Height: =72
+            Mode: =TextMode.MultiLine
+            Default: =""
+            HintText: ="Escreva aqui. Usada também ao mover para Aguardando ou ao concluir"
+            Size: =10
+            BorderColor: =corBordaForte
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =varQdPode && varQd.Coluna <> "Novas"
+      - btnPnEnviarMsg:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =Parent.Width - 24 - 150
+            Y: =472
+            Width: =150
+            Height: =34
+            Text: ="Só enviar mensagem"
+            Size: =9
+            Fill: =Color.White
+            HoverFill: =corColuna
+            PressedFill: =corPrimariaClara
+            Color: =corTexto
+            HoverColor: =corTexto
+            BorderColor: =corBordaForte
+            BorderThickness: =1
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =varQdPode && varQd.Coluna <> "Novas"
+            DisplayMode: =If(IsBlank(Trim(txtQdMsg.Text)) || IsBlank(varQd.SolEmail), DisplayMode.Disabled, DisplayMode.Edit)
+            OnSelect: |-
+              =With({msg: Trim(txtQdMsg.Text)},
+                  Office365Outlook.SendEmailV2(
+                      varQd.SolEmail,
+                      "Atualização da sua solicitação: " & varQd.Codigo & " · " & varQd.Desc,
+                      "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                      "<p>Olá, " & First(Split(varQd.SolNome, " ")).Value & ".</p>" &
+                      "<p style='background:#F5F7F9;padding:12px;border-radius:6px'>" & Substitute(msg, Char(10), "<br>") & "</p>" &
+                      "<p style='color:#5F6B76'>Status atual: " & varQd.StatusTxt & "<br>" & User().FullName & "<br>Coordenação de Contratos</p></div>"
+                  );
+                  Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                      Title: "Mensagem enviada ao solicitante",
+                      SolicitacaoID: varQd.ID,
+                      Acao: {Value: "Comentário"},
+                      Mensagem: msg,
+                      Usuario: nfEuPessoa,
+                      DataHora: Now()
+                  })
+              );
+              Reset(txtQdMsg);
+              Refresh(HistoricoSolicitacoes);
+              Notify("Mensagem enviada para " & varQd.SolNome, NotificationType.Success)
+      - recPnSep:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =24
+            Y: =520
+            Width: =Parent.Width - 48
+            Height: =1
+            Fill: =corBorda
+            Visible: =varQdPode && !varQd.Fechada && varQd.Coluna <> "Novas"
+      - lblPnRotPrazo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =530
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: =If(nfPapel = "Coordenador", "ALTERAR PRAZO", "PEDIR ALTERAÇÃO DE PRAZO (vai para aprovação da coordenação)")
+            Visible: =varQdPode && !varQd.Fechada && varQd.Coluna <> "Novas"
+      - dpQdPrazo:
+          Control: Classic/DatePicker@2.6.0
+          Properties:
+            X: =24
+            Y: =552
+            Width: =160
+            Height: =36
+            DefaultDate: =varQd.DtPrazo
+            Format: ="dd/mm/yyyy"
+            Language: ="pt-BR"
+            Size: =10
+            BorderColor: =corBordaForte
+            Visible: =varQdPode && !varQd.Fechada && varQd.Coluna <> "Novas"
+      - txtQdMotivoPrazo:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =192
+            Y: =552
+            Width: =Parent.Width - 192 - 24
+            Height: =36
+            Default: =""
+            HintText: ="Motivo da mudança *"
+            Size: =10
+            BorderColor: =corBordaForte
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =varQdPode && !varQd.Fechada && varQd.Coluna <> "Novas"
+      - btnPnPrazo:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =Parent.Width - 24 - 170
+            Y: =596
+            Width: =170
+            Height: =34
+            Text: =If(nfPapel = "Coordenador", "Salvar novo prazo", "Pedir alteração")
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Fill: =corPrimaria
+            HoverFill: =corPrimariaEsc
+            PressedFill: =corPrimariaEsc
+            Color: =Color.White
+            HoverColor: =Color.White
+            DisabledFill: =corBordaForte
+            DisabledColor: =Color.White
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =varQdPode && !varQd.Fechada && varQd.Coluna <> "Novas"
+            DisplayMode: |-
+              =If(IsBlank(dpQdPrazo.SelectedDate) || dpQdPrazo.SelectedDate = varQd.DtPrazo || IsBlank(Trim(txtQdMotivoPrazo.Text)),
+                  DisplayMode.Disabled, DisplayMode.Edit)
+            OnSelect: |-
+              =If(nfPapel = "Coordenador",
+                  Patch(SolicitacoesContrato, LookUp(SolicitacoesContrato, ID = varQd.ID), {PrazoAcordado: dpQdPrazo.SelectedDate});
+                  Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                      Title: "Prazo alterado para " & Text(dpQdPrazo.SelectedDate, "dd/mm/yyyy"),
+                      SolicitacaoID: varQd.ID,
+                      Acao: {Value: "Prazo alterado"},
+                      CampoAlterado: "PrazoAcordado",
+                      ValorAnterior: Text(varQd.DtPrazo, "dd/mm/yyyy"),
+                      ValorNovo: Text(dpQdPrazo.SelectedDate, "dd/mm/yyyy"),
+                      Mensagem: txtQdMotivoPrazo.Text,
+                      Usuario: nfEuPessoa,
+                      DataHora: Now()
+                  });
+                  Notify("Prazo alterado", NotificationType.Success),
+                  With({coord: First(Filter(nfEquipe, PapelTxt = "Coordenador"))},
+                      Patch(PedidosAlteracao, Defaults(PedidosAlteracao), {
+                          Title: "Prazo " & Text(varQd.DtPrazo, "dd/mm") & " → " & Text(dpQdPrazo.SelectedDate, "dd/mm"),
+                          SolicitacaoID: varQd.ID,
+                          Campo: {Value: "PrazoAcordado"},
+                          ValorAtual: Text(varQd.DtPrazo, "dd/mm/yyyy"),
+                          ValorProposto: Text(dpQdPrazo.SelectedDate, "yyyy-mm-dd"),
+                          Motivo: txtQdMotivoPrazo.Text,
+                          SolicitadoPor: nfEuPessoa,
+                          Aprovador: {
+                              Claims: "i:0#.f|membership|" & coord.Email,
+                              DisplayName: coord.Nome,
+                              Email: coord.Email,
+                              Department: "",
+                              JobTitle: "",
+                              Picture: ""
+                          },
+                          StatusPedido: {Value: "Pendente"},
+                          DataPedido: Now()
+                      })
+                  );
+                  Notify("Pedido enviado para aprovação da coordenação", NotificationType.Success)
+              );
+              Reset(txtQdMotivoPrazo);
+              Refresh(SolicitacoesContrato);
+              Refresh(PedidosAlteracao);
+              Set(varQd, LookUp(nfSol, ID = varQd.ID))

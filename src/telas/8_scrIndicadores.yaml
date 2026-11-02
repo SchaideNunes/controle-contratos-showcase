@@ -1,0 +1,735 @@
+- lblInTitulo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =16
+      Width: =600
+      Height: =36
+      Size: =17
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+      Text: ="Indicadores"
+- lblInSub:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =50
+      Width: =900
+      Height: =22
+      Size: =9
+      Color: =corSuave
+      Text: |-
+        ="Período: " & If(varIndPer = "Tudo", "todo o histórico", Text(varIndIni, "dd/mm/yyyy") & " a " & Text(Today(), "dd/mm/yyyy")) &
+        "  ·  base: data de recebimento  ·  em aberto e atrasadas mostram a situação de hoje"
+- btnInAtualizar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =24
+      Width: =120
+      Height: =36
+      Text: ="Atualizar"
+      Size: =10
+      Fill: =Color.White
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderColor: =corBordaForte
+      BorderThickness: =1
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Refresh(SolicitacoesContrato)
+- recInLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =84
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- lblInRotTipo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =96
+      Width: =40
+      Height: =38
+      Size: =9
+      Color: =corSuave
+      Text: ="Tipo"
+- cbInTipo:
+    Control: Classic/ComboBox@2.4.0
+    Properties:
+      X: =292
+      Y: =96
+      Width: =190
+      Height: =38
+      Items: =Sort(Distinct(nfSol, TipoTxt), Value)
+      SelectMultiple: =false
+      IsSearchable: =false
+      InputTextPlaceholder: ="Todos"
+      DefaultSelectedItems: =Blank()
+      Size: =10
+      BorderColor: =corBorda
+- lblInRotResp:
+    Control: Label@2.5.1
+    Properties:
+      X: =498
+      Y: =96
+      Width: =86
+      Height: =38
+      Size: =9
+      Color: =corSuave
+      Text: ="Responsável"
+- cbInResp:
+    Control: Classic/ComboBox@2.4.0
+    Properties:
+      X: =584
+      Y: =96
+      Width: =190
+      Height: =38
+      Items: =Sort(Distinct(nfSol, RespNome), Value)
+      SelectMultiple: =false
+      IsSearchable: =false
+      InputTextPlaceholder: ="Todos"
+      DefaultSelectedItems: =Blank()
+      Size: =10
+      BorderColor: =corBorda
+- galInPeriodo:
+    Control: Gallery@2.15.0
+    Variant: Horizontal
+    Properties:
+      X: =796
+      Y: =96
+      Width: =4 * 92
+      Height: =38
+      TemplateSize: =92
+      TemplatePadding: =0
+      ShowScrollbar: =false
+      Items: =["Este mês", "3 meses", "Ano", "Tudo"]
+    Children:
+      - btnInPeriodo:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth - 6
+            Height: =38
+            Text: =ThisItem.Value
+            Size: =10
+            FontWeight: =If(varIndPer = ThisItem.Value, FontWeight.Semibold, FontWeight.Normal)
+            Fill: =If(varIndPer = ThisItem.Value, corPrimaria, Color.White)
+            HoverFill: =If(varIndPer = ThisItem.Value, corPrimaria, corColuna)
+            PressedFill: =corPrimariaClara
+            Color: =If(varIndPer = ThisItem.Value, Color.White, corTexto)
+            HoverColor: =Self.Color
+            BorderColor: =corBordaForte
+            BorderThickness: =If(varIndPer = ThisItem.Value, 0, 1)
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            OnSelect: |-
+              =Set(varIndPer, ThisItem.Value);
+              Set(varIndIni, Switch(ThisItem.Value,
+                  "Este mês", Date(Year(Today()), Month(Today()), 1),
+                  "3 meses", DateAdd(Today(), -3, TimeUnit.Months),
+                  "Ano", Date(Year(Today()), 1, 1),
+                  Date(2000, 1, 1)
+              ))
+- btnInLimpar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =96
+      Width: =120
+      Height: =38
+      Text: ="Limpar filtros"
+      Align: =Align.Right
+      Size: =10
+      FontWeight: =FontWeight.Semibold
+      Fill: =RGBA(0, 0, 0, 0)
+      HoverFill: =RGBA(0, 0, 0, 0)
+      PressedFill: =RGBA(0, 0, 0, 0)
+      Color: =corPrimaria
+      HoverColor: =corPrimariaEsc
+      BorderThickness: =0
+      OnSelect: =Reset(cbInTipo); Reset(cbInResp)
+- galInKpis:
+    Control: Gallery@2.15.0
+    Variant: Horizontal
+    Properties:
+      X: =252
+      Y: =146
+      Width: =Parent.Width - 252 - 20
+      Height: =96
+      TemplateSize: =Self.Width / 6
+      TemplatePadding: =0
+      ShowScrollbar: =false
+      Items: |-
+        =With(
+            {b: Filter(nfSol,
+                IsBlank(cbInTipo.Selected.Value) || TipoTxt = cbInTipo.Selected.Value,
+                IsBlank(cbInResp.Selected.Value) || RespNome = cbInResp.Selected.Value
+            )},
+            With(
+                {
+                    abertas: Filter(b, !Fechada),
+                    atr: Filter(b, Atrasada),
+                    rec: Filter(b, DtReceb >= varIndIni),
+                    conc: Filter(b, StatusTxt = "Concluída" && DtConcl >= varIndIni)
+                },
+                Table(
+                    {Titulo: "Em aberto", Valor: Text(CountRows(abertas)), Detalhe: CountRows(Filter(abertas, RespNome = "Sem responsável")) & " sem responsável", Tipo: "normal"},
+                    {Titulo: "Atrasadas", Valor: Text(CountRows(atr)), Detalhe: If(IsEmpty(abertas), "—", Text(CountRows(atr) / CountRows(abertas), "0%") & " das abertas"), Tipo: If(CountRows(atr) > 0, "alerta", "normal")},
+                    {Titulo: "Recebidas", Valor: Text(CountRows(rec)), Detalhe: "no período", Tipo: "normal"},
+                    {Titulo: "Concluídas", Valor: Text(CountRows(conc)), Detalhe: "no período", Tipo: "normal"},
+                    {Titulo: "Concluídas no prazo", Valor: If(IsEmpty(conc), "—", Text(CountRows(Filter(conc, NoPrazo)) / CountRows(conc), "0%")), Detalhe: CountRows(Filter(conc, NoPrazo)) & " de " & CountRows(conc) & " concluídas", Tipo: "verde"},
+                    {Titulo: "Tempo médio", Valor: If(IsEmpty(conc), "—", Text(IfError(Average(conc, DiasAtend), 0), "0.0") & " d"), Detalhe: "do recebimento à conclusão", Tipo: "normal"}
+                )
+            )
+        )
+    Children:
+      - recInKpi:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth - 10
+            Height: =Parent.TemplateHeight
+            Fill: =If(ThisItem.Tipo = "alerta", corVermelhoBg, Color.White)
+            BorderColor: =If(ThisItem.Tipo = "alerta", corVermelhoBorda, corBorda)
+            BorderThickness: =1
+      - lblInKpiTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =14
+            Y: =10
+            Width: =Parent.TemplateWidth - 38
+            Height: =22
+            Size: =9
+            Color: =If(ThisItem.Tipo = "alerta", corVermelho, corTextoMedio)
+            Text: =ThisItem.Titulo
+      - lblInKpiValor:
+          Control: Label@2.5.1
+          Properties:
+            X: =14
+            Y: =30
+            Width: =Parent.TemplateWidth - 38
+            Height: =40
+            Size: =20
+            FontWeight: =FontWeight.Semibold
+            Color: =Switch(ThisItem.Tipo, "alerta", corVermelho, "verde", corVerde, corTexto)
+            Text: =ThisItem.Valor
+      - lblInKpiDetalhe:
+          Control: Label@2.5.1
+          Properties:
+            X: =14
+            Y: =68
+            Width: =Parent.TemplateWidth - 38
+            Height: =20
+            Size: =8
+            Color: =If(ThisItem.Tipo = "alerta", corVermelho, corSuave)
+            Text: =ThisItem.Detalhe
+- conInComp:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252
+      Y: =256
+      Width: =(Parent.Width - 284 - 12) * 0.6
+      Height: =Parent.Height - 256 - 16
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblInCompTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =10
+            Width: =130
+            Height: =32
+            Size: =12
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Comparativo"
+      - galInCat:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            X: =Parent.Width - 18 - 5 * 88
+            Y: =10
+            Width: =5 * 88
+            Height: =32
+            TemplateSize: =88
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            Items: =["Tipo", "Área", "Opex/Capex", "Responsável", "Prioridade"]
+          Children:
+            - btnInCat:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth - 4
+                  Height: =30
+                  Text: =ThisItem.Value
+                  Size: =9
+                  FontWeight: =If(Coalesce(varIndCat, "Tipo") = ThisItem.Value, FontWeight.Semibold, FontWeight.Normal)
+                  Fill: =If(Coalesce(varIndCat, "Tipo") = ThisItem.Value, corPrimaria, RGBA(0, 0, 0, 0))
+                  HoverFill: =If(Coalesce(varIndCat, "Tipo") = ThisItem.Value, corPrimaria, corColuna)
+                  PressedFill: =corPrimariaClara
+                  Color: =If(Coalesce(varIndCat, "Tipo") = ThisItem.Value, Color.White, corTexto)
+                  HoverColor: =Self.Color
+                  BorderThickness: =0
+                  RadiusTopLeft: =15
+                  RadiusTopRight: =15
+                  RadiusBottomLeft: =15
+                  RadiusBottomRight: =15
+                  OnSelect: =Set(varIndCat, ThisItem.Value)
+      - recInCompCab:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =50
+            Width: =Parent.Width
+            Height: =1
+            Fill: =corBorda
+      - lblInCabNome:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =52
+            Width: =Parent.Width - 18 - 460
+            Height: =30
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: =Upper(Coalesce(varIndCat, "Tipo"))
+      - lblInCabAb:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 460
+            Y: =52
+            Width: =140
+            Height: =30
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="EM ABERTO"
+      - lblInCabAtr:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 320
+            Y: =52
+            Width: =70
+            Height: =30
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="ATRASADAS"
+      - lblInCabConc:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 250
+            Y: =52
+            Width: =76
+            Height: =30
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="CONCLUÍDAS"
+      - lblInCabPrazo:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 174
+            Y: =52
+            Width: =70
+            Height: =30
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="NO PRAZO"
+      - lblInCabTempo:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 104
+            Y: =52
+            Width: =86
+            Height: =30
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="TEMPO MÉDIO"
+      - galInComp:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =0
+            Y: =82
+            Width: =Parent.Width
+            Height: =Parent.Height - 82 - 44
+            TemplateSize: =50
+            TemplatePadding: =0
+            Items: |-
+              =With(
+                  {b2: AddColumns(
+                      Filter(nfSol,
+                          IsBlank(cbInTipo.Selected.Value) || TipoTxt = cbInTipo.Selected.Value,
+                          IsBlank(cbInResp.Selected.Value) || RespNome = cbInResp.Selected.Value
+                      ),
+                      Cat, Coalesce(Switch(Coalesce(varIndCat, "Tipo"), "Tipo", TipoTxt, "Área", AreaTxt, "Opex/Capex", ClassTxt, "Responsável", RespNome, PrioTxt), "(sem valor)")
+                  )},
+                  With(
+                      {t: AddColumns(Distinct(b2, Cat),
+                          Rec, CountRows(Filter(b2, Cat = Value && DtReceb >= varIndIni)),
+                          Ab, CountRows(Filter(b2, Cat = Value && !Fechada)),
+                          Atr, CountRows(Filter(b2, Cat = Value && Atrasada)),
+                          Conc, CountRows(Filter(b2, Cat = Value && StatusTxt = "Concluída" && DtConcl >= varIndIni)),
+                          NoPrz, CountRows(Filter(b2, Cat = Value && StatusTxt = "Concluída" && DtConcl >= varIndIni && NoPrazo)),
+                          Tempo, IfError(Average(Filter(b2, Cat = Value && StatusTxt = "Concluída" && DtConcl >= varIndIni), DiasAtend), 0)
+                      )},
+                      SortByColumns(
+                          AddColumns(Filter(t, Rec > 0 || Ab > 0), Pct, If(Max(t, Ab) = 0, 0, Ab / Max(t, Ab))),
+                          "Ab", SortOrder.Descending,
+                          "Rec", SortOrder.Descending
+                      )
+                  )
+              )
+          Children:
+            - lblInCpNome:
+                Control: Label@2.5.1
+                Properties:
+                  X: =18
+                  Y: =4
+                  Width: =Parent.TemplateWidth - 18 - 470
+                  Height: =22
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =If(ThisItem.Value = "Sem responsável", corVermelho, corTexto)
+                  Text: =ThisItem.Value
+            - lblInCpRec:
+                Control: Label@2.5.1
+                Properties:
+                  X: =18
+                  Y: =24
+                  Width: =Parent.TemplateWidth - 18 - 470
+                  Height: =20
+                  Size: =8
+                  Color: =corSuave
+                  Text: =ThisItem.Rec & " recebida(s) no período"
+            - lblInCpAb:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 460
+                  Y: =0
+                  Width: =24
+                  Height: =Parent.TemplateHeight
+                  Size: =10
+                  Color: =corTexto
+                  Text: =ThisItem.Ab
+            - recInCpBarra:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =Parent.TemplateWidth - 434
+                  Y: =21
+                  Width: =Max(2, 100 * ThisItem.Pct)
+                  Height: =8
+                  Fill: =corPrimaria
+                  Visible: =ThisItem.Ab > 0
+            - lblInCpAtr:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 320
+                  Y: =0
+                  Width: =70
+                  Height: =Parent.TemplateHeight
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =If(ThisItem.Atr > 0, corVermelho, corTexto)
+                  Text: =ThisItem.Atr
+            - lblInCpConc:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 250
+                  Y: =0
+                  Width: =76
+                  Height: =Parent.TemplateHeight
+                  Size: =10
+                  Color: =corTexto
+                  Text: =ThisItem.Conc
+            - lblInCpPrazo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 174
+                  Y: =0
+                  Width: =70
+                  Height: =Parent.TemplateHeight
+                  Size: =10
+                  Color: =corTexto
+                  Text: =If(ThisItem.Conc = 0, "—", Text(ThisItem.NoPrz / ThisItem.Conc, "0%"))
+            - lblInCpTempo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 104
+                  Y: =0
+                  Width: =86
+                  Height: =Parent.TemplateHeight
+                  Size: =10
+                  Color: =corTexto
+                  Text: =If(ThisItem.Conc = 0, "—", Text(ThisItem.Tempo, "0.0") & " d")
+            - recInCpSep:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =Parent.TemplateHeight - 1
+                  Width: =Parent.TemplateWidth
+                  Height: =1
+                  Fill: =ColorValue("#EEF1F3")
+      - recInTotal:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =Parent.Height - 44
+            Width: =Parent.Width
+            Height: =44
+            Fill: =ColorValue("#F5F7F9")
+      - lblInTotNome:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =Parent.Height - 44
+            Width: =200
+            Height: =44
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Total"
+      - lblInTotAb:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 460
+            Y: =Parent.Height - 44
+            Width: =140
+            Height: =44
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =Sum(galInComp.AllItems, Ab)
+      - lblInTotAtr:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 320
+            Y: =Parent.Height - 44
+            Width: =70
+            Height: =44
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =If(Sum(galInComp.AllItems, Atr) > 0, corVermelho, corTexto)
+            Text: =Sum(galInComp.AllItems, Atr)
+      - lblInTotConc:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 250
+            Y: =Parent.Height - 44
+            Width: =76
+            Height: =44
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =Sum(galInComp.AllItems, Conc)
+      - lblInTotPrazo:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 174
+            Y: =Parent.Height - 44
+            Width: =70
+            Height: =44
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =If(Sum(galInComp.AllItems, Conc) = 0, "—", Text(Sum(galInComp.AllItems, NoPrz) / Sum(galInComp.AllItems, Conc), "0%"))
+      - lblInTotTempo:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 104
+            Y: =Parent.Height - 44
+            Width: =86
+            Height: =44
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: |-
+              =With({c: Filter(nfSol, StatusTxt = "Concluída" && DtConcl >= varIndIni,
+                      IsBlank(cbInTipo.Selected.Value) || TipoTxt = cbInTipo.Selected.Value,
+                      IsBlank(cbInResp.Selected.Value) || RespNome = cbInResp.Selected.Value)},
+                  If(IsEmpty(c), "—", Text(IfError(Average(c, DiasAtend), 0), "0.0") & " d"))
+- conInGrafico:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252 + (Parent.Width - 284 - 12) * 0.6 + 12
+      Y: =256
+      Width: =Parent.Width - 32 - (252 + (Parent.Width - 284 - 12) * 0.6 + 12)
+      Height: =Parent.Height - 256 - 16
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblInGrTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =10
+            Width: =Parent.Width - 36
+            Height: =28
+            Size: =12
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Recebidas x concluídas"
+      - lblInGrSub:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =36
+            Width: =Parent.Width - 36
+            Height: =20
+            Size: =8
+            Color: =corSuave
+            Text: ="Últimos 6 meses  ·  respeita os filtros de tipo e responsável"
+      - recInLegRec:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =18
+            Y: =66
+            Width: =10
+            Height: =10
+            Fill: =ColorValue("#2B6CB0")
+      - lblInLegRec:
+          Control: Label@2.5.1
+          Properties:
+            X: =32
+            Y: =60
+            Width: =80
+            Height: =22
+            Size: =8
+            Color: =corTextoMedio
+            Text: ="Recebidas"
+      - recInLegConc:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =116
+            Y: =66
+            Width: =10
+            Height: =10
+            Fill: =ColorValue("#C27A2C")
+      - lblInLegConc:
+          Control: Label@2.5.1
+          Properties:
+            X: =130
+            Y: =60
+            Width: =90
+            Height: =22
+            Size: =8
+            Color: =corTextoMedio
+            Text: ="Concluídas"
+      - galInMeses:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            X: =12
+            Y: =90
+            Width: =Parent.Width - 24
+            Height: =Parent.Height - 90 - 12
+            TemplateSize: =Self.Width / 6
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            Items: |-
+              =With(
+                  {b: Filter(nfSol,
+                      IsBlank(cbInTipo.Selected.Value) || TipoTxt = cbInTipo.Selected.Value,
+                      IsBlank(cbInResp.Selected.Value) || RespNome = cbInResp.Selected.Value
+                  )},
+                  With(
+                      {t: ForAll(Sequence(6),
+                          With({m: DateAdd(Date(Year(Today()), Month(Today()), 1), Value - 6, TimeUnit.Months)},
+                              {
+                                  Nome: Text(m, "mmm", "pt-BR"),
+                                  R: CountRows(Filter(b, DtReceb >= m && DtReceb < DateAdd(m, 1, TimeUnit.Months))),
+                                  C: CountRows(Filter(b, StatusTxt = "Concluída" && DtConcl >= m && DtConcl < DateAdd(m, 1, TimeUnit.Months)))
+                              }
+                          )
+                      )},
+                      AddColumns(t, Mx, Max(1, Max(t, R), Max(t, C)))
+                  )
+              )
+          Children:
+            - lblInMesR:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth / 2 - 30
+                  Y: =Parent.TemplateHeight - 30 - 20 - (Parent.TemplateHeight - 80) * ThisItem.R / ThisItem.Mx
+                  Width: =28
+                  Height: =20
+                  Align: =Align.Center
+                  Size: =8
+                  Color: =corTextoMedio
+                  Text: =ThisItem.R
+            - recInMesR:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =Parent.TemplateWidth / 2 - 28
+                  Y: =Parent.TemplateHeight - 30 - Max(2, (Parent.TemplateHeight - 80) * ThisItem.R / ThisItem.Mx)
+                  Width: =24
+                  Height: =Max(2, (Parent.TemplateHeight - 80) * ThisItem.R / ThisItem.Mx)
+                  Fill: =ColorValue("#2B6CB0")
+            - lblInMesC:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth / 2 + 2
+                  Y: =Parent.TemplateHeight - 30 - 20 - (Parent.TemplateHeight - 80) * ThisItem.C / ThisItem.Mx
+                  Width: =28
+                  Height: =20
+                  Align: =Align.Center
+                  Size: =8
+                  Color: =corTextoMedio
+                  Text: =ThisItem.C
+            - recInMesC:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =Parent.TemplateWidth / 2 + 4
+                  Y: =Parent.TemplateHeight - 30 - Max(2, (Parent.TemplateHeight - 80) * ThisItem.C / ThisItem.Mx)
+                  Width: =24
+                  Height: =Max(2, (Parent.TemplateHeight - 80) * ThisItem.C / ThisItem.Mx)
+                  Fill: =ColorValue("#C27A2C")
+            - recInMesBase:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =Parent.TemplateHeight - 30
+                  Width: =Parent.TemplateWidth
+                  Height: =1
+                  Fill: =corBordaForte
+            - lblInMesNome:
+                Control: Label@2.5.1
+                Properties:
+                  X: =0
+                  Y: =Parent.TemplateHeight - 28
+                  Width: =Parent.TemplateWidth
+                  Height: =24
+                  Align: =Align.Center
+                  Size: =9
+                  Color: =corSuave
+                  Text: =ThisItem.Nome

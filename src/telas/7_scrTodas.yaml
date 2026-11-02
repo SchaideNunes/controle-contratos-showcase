@@ -1,0 +1,694 @@
+- lblTdTitulo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =16
+      Width: =600
+      Height: =36
+      Size: =17
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+      Text: ="Todas as solicitações"
+- lblTdSub:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =50
+      Width: =800
+      Height: =22
+      Size: =9
+      Color: =corSuave
+      Text: =CountRows(nfSol) & " solicitações  ·  clique numa linha para ver os detalhes e o histórico"
+- btnTdAtualizar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =24
+      Width: =120
+      Height: =36
+      Text: ="Atualizar"
+      Size: =10
+      Fill: =Color.White
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderColor: =corBordaForte
+      BorderThickness: =1
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Refresh(SolicitacoesContrato); Refresh(HistoricoSolicitacoes)
+- recTdLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =84
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- galTdAbas:
+    Control: Gallery@2.15.0
+    Variant: Horizontal
+    Properties:
+      X: =244
+      Y: =90
+      Width: =Parent.Width - 244 - 32
+      Height: =40
+      TemplateSize: =150
+      TemplatePadding: =0
+      ShowScrollbar: =false
+      Items: |-
+        =Table(
+            {Aba: "Em aberto", Qtd: CountRows(Filter(nfSol, !Fechada))},
+            {Aba: "Atrasadas", Qtd: CountRows(Filter(nfSol, Atrasada))},
+            {Aba: "Concluídas", Qtd: CountRows(Filter(nfSol, StatusTxt = "Concluída"))},
+            {Aba: "Canceladas e recusadas", Qtd: CountRows(Filter(nfSol, StatusTxt in ["Cancelada", "Recusada"]))},
+            {Aba: "Todas", Qtd: CountRows(nfSol)}
+        )
+    Children:
+      - btnTdAba:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth - 4
+            Height: =38
+            Text: =ThisItem.Aba & " · " & ThisItem.Qtd
+            Size: =10
+            FontWeight: =If(Coalesce(varTdAba, "Em aberto") = ThisItem.Aba, FontWeight.Semibold, FontWeight.Normal)
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =corColuna
+            PressedFill: =corPrimariaClara
+            Color: =If(ThisItem.Aba = "Atrasadas", corVermelho, Coalesce(varTdAba, "Em aberto") = ThisItem.Aba, corPrimariaEsc, corTextoMedio)
+            HoverColor: =Self.Color
+            BorderThickness: =0
+            OnSelect: =Set(varTdAba, ThisItem.Aba)
+      - recTdAbaSel:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =8
+            Y: =36
+            Width: =Parent.TemplateWidth - 20
+            Height: =2
+            Fill: =If(ThisItem.Aba = "Atrasadas", corVermelho, corPrimaria)
+            Visible: =Coalesce(varTdAba, "Em aberto") = ThisItem.Aba
+- recTdAbasLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =130
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- txtTdBusca:
+    Control: Classic/TextInput@2.3.2
+    Properties:
+      X: =252
+      Y: =144
+      Width: =360
+      Height: =38
+      Default: =""
+      HintText: ="Buscar por descrição, código, solicitante ou contrato"
+      DelayOutput: =true
+      Size: =10
+      Fill: =Color.White
+      BorderColor: =corBorda
+      RadiusTopLeft: =4
+      RadiusTopRight: =4
+      RadiusBottomLeft: =4
+      RadiusBottomRight: =4
+- cbTdTipo:
+    Control: Classic/ComboBox@2.4.0
+    Properties:
+      X: =624
+      Y: =144
+      Width: =180
+      Height: =38
+      Items: =Sort(Distinct(nfSol, TipoTxt), Value)
+      SelectMultiple: =false
+      IsSearchable: =false
+      InputTextPlaceholder: ="Tipo"
+      DefaultSelectedItems: =Blank()
+      Size: =10
+      BorderColor: =corBorda
+- cbTdArea:
+    Control: Classic/ComboBox@2.4.0
+    Properties:
+      X: =816
+      Y: =144
+      Width: =180
+      Height: =38
+      Items: =Sort(Distinct(nfSol, AreaTxt), Value)
+      SelectMultiple: =false
+      IsSearchable: =false
+      InputTextPlaceholder: ="Área"
+      DefaultSelectedItems: =Blank()
+      Size: =10
+      BorderColor: =corBorda
+- cbTdResp:
+    Control: Classic/ComboBox@2.4.0
+    Properties:
+      X: =1008
+      Y: =144
+      Width: =180
+      Height: =38
+      Items: =Sort(Distinct(nfSol, RespNome), Value)
+      SelectMultiple: =false
+      IsSearchable: =false
+      InputTextPlaceholder: ="Responsável"
+      DefaultSelectedItems: =Blank()
+      Size: =10
+      BorderColor: =corBorda
+- btnTdLimpar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =144
+      Width: =120
+      Height: =38
+      Text: ="Limpar filtros"
+      Align: =Align.Right
+      Size: =10
+      FontWeight: =FontWeight.Semibold
+      Fill: =RGBA(0, 0, 0, 0)
+      HoverFill: =RGBA(0, 0, 0, 0)
+      PressedFill: =RGBA(0, 0, 0, 0)
+      Color: =corPrimaria
+      HoverColor: =corPrimariaEsc
+      BorderThickness: =0
+      OnSelect: =Reset(txtTdBusca); Reset(cbTdTipo); Reset(cbTdArea); Reset(cbTdResp)
+- conTdTabela:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252
+      Y: =196
+      Width: =Parent.Width - 252 - 32
+      Height: =Parent.Height - 196 - 16
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - recTdCab:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =36
+            Fill: =ColorValue("#F5F7F9")
+      - lblTdCabCodigo:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =0
+            Width: =96
+            Height: =36
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="CÓDIGO"
+      - lblTdCabDesc:
+          Control: Label@2.5.1
+          Properties:
+            X: =112
+            Y: =0
+            Width: =Parent.Width - 112 - 616
+            Height: =36
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="DESCRIÇÃO"
+      - lblTdCabSol:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 616
+            Y: =0
+            Width: =130
+            Height: =36
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="SOLICITANTE"
+      - lblTdCabPrazo:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 486
+            Y: =0
+            Width: =90
+            Height: =36
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="PRAZO"
+      - lblTdCabPrio:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 396
+            Y: =0
+            Width: =96
+            Height: =36
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="PRIORIDADE"
+      - lblTdCabStatus:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 300
+            Y: =0
+            Width: =150
+            Height: =36
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="STATUS"
+      - lblTdCabResp:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 150
+            Y: =0
+            Width: =140
+            Height: =36
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="RESPONSÁVEL"
+      - galTdLinhas:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =0
+            Y: =36
+            Width: =Parent.Width
+            Height: =Parent.Height - 36
+            TemplateSize: =54
+            TemplatePadding: =0
+            Items: |-
+              =SortByColumns(
+                  Filter(nfSol,
+                      Switch(Coalesce(varTdAba, "Em aberto"),
+                          "Em aberto", !Fechada,
+                          "Atrasadas", Atrasada,
+                          "Concluídas", StatusTxt = "Concluída",
+                          "Canceladas e recusadas", StatusTxt in ["Cancelada", "Recusada"],
+                          true
+                      ),
+                      IsBlank(cbTdTipo.Selected.Value) || TipoTxt = cbTdTipo.Selected.Value,
+                      IsBlank(cbTdArea.Selected.Value) || AreaTxt = cbTdArea.Selected.Value,
+                      IsBlank(cbTdResp.Selected.Value) || RespNome = cbTdResp.Selected.Value,
+                      IsBlank(txtTdBusca.Text) ||
+                          txtTdBusca.Text in Desc || txtTdBusca.Text in Codigo ||
+                          txtTdBusca.Text in SolNome || txtTdBusca.Text in NumeroContrato ||
+                          txtTdBusca.Text in Fornecedor
+                  ),
+                  If(Coalesce(varTdAba, "Em aberto") in ["Em aberto", "Atrasadas"], "DtPrazo", "DtReceb"),
+                  If(Coalesce(varTdAba, "Em aberto") in ["Em aberto", "Atrasadas"], SortOrder.Ascending, SortOrder.Descending)
+              )
+            OnSelect: =Set(varTd, ThisItem); Set(varTdPainel, true)
+          Children:
+            - recTdAtr:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =3
+                  Height: =Parent.TemplateHeight
+                  Fill: =corVermelho
+                  Visible: =ThisItem.Atrasada
+                  OnSelect: =Select(Parent)
+            - lblTdCodigo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =0
+                  Width: =96
+                  Height: =Parent.TemplateHeight
+                  Size: =9
+                  Color: =corSuave
+                  Text: =ThisItem.Codigo
+                  OnSelect: =Select(Parent)
+            - lblTdDesc:
+                Control: Label@2.5.1
+                Properties:
+                  X: =112
+                  Y: =6
+                  Width: =Parent.TemplateWidth - 112 - 626
+                  Height: =22
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =ThisItem.Desc
+                  OnSelect: =Select(Parent)
+            - lblTdDescSub:
+                Control: Label@2.5.1
+                Properties:
+                  X: =112
+                  Y: =28
+                  Width: =Parent.TemplateWidth - 112 - 626
+                  Height: =20
+                  Size: =8
+                  Color: =corSuave
+                  Text: =ThisItem.TipoTxt & "  ·  " & ThisItem.AreaTxt
+                  OnSelect: =Select(Parent)
+            - lblTdSol:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 616
+                  Y: =0
+                  Width: =124
+                  Height: =Parent.TemplateHeight
+                  Size: =9
+                  Color: =corTexto
+                  Text: =ThisItem.SolNome
+                  OnSelect: =Select(Parent)
+            - lblTdPrazo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 486
+                  Y: =0
+                  Width: =90
+                  Height: =Parent.TemplateHeight
+                  Size: =9
+                  FontWeight: =If(ThisItem.Atrasada, FontWeight.Bold, FontWeight.Normal)
+                  Color: =If(ThisItem.Atrasada, corVermelho, corTexto)
+                  Text: =Text(ThisItem.DtPrazo, "dd/mm/yyyy")
+                  OnSelect: =Select(Parent)
+            - btnTdPrio:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =Parent.TemplateWidth - 396
+                  Y: =16
+                  Width: =84
+                  Height: =22
+                  Text: =ThisItem.PrioRotulo
+                  Size: =8
+                  FontWeight: =FontWeight.Semibold
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  Color: =ThisItem.PrioCor
+                  HoverColor: =Self.Color
+                  Fill: =ThisItem.PrioFundo
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  BorderThickness: =0
+                  RadiusTopLeft: =11
+                  RadiusTopRight: =11
+                  RadiusBottomLeft: =11
+                  RadiusBottomRight: =11
+                  OnSelect: =Select(Parent)
+            - btnTdStatus:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =Parent.TemplateWidth - 300
+                  Y: =16
+                  Width: =142
+                  Height: =22
+                  Text: =ThisItem.StatusTxt
+                  Size: =8
+                  FontWeight: =FontWeight.Semibold
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  Color: |-
+                    =Switch(ThisItem.StatusTxt,
+                        "Nova", ColorValue("#7A4F0A"),
+                        "Em andamento", corPrimariaEsc,
+                        "Aguardando solicitante", corAzulAgua,
+                        "Aguardando aprovação", corAzulAgua,
+                        "Concluída", corVerde,
+                        corTextoMedio)
+                  HoverColor: =Self.Color
+                  Fill: |-
+                    =Switch(ThisItem.StatusTxt,
+                        "Nova", corAmbarBg,
+                        "Em andamento", ColorValue("#DDE6EE"),
+                        "Aguardando solicitante", corAzulAguaBg,
+                        "Aguardando aprovação", corAzulAguaBg,
+                        "Concluída", ColorValue("#E3F1E8"),
+                        ColorValue("#E3E8EC"))
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  BorderThickness: =0
+                  RadiusTopLeft: =11
+                  RadiusTopRight: =11
+                  RadiusBottomLeft: =11
+                  RadiusBottomRight: =11
+                  OnSelect: =Select(Parent)
+            - lblTdResp:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 150
+                  Y: =0
+                  Width: =140
+                  Height: =Parent.TemplateHeight
+                  Size: =9
+                  Italic: =ThisItem.RespNome = "Sem responsável"
+                  Color: =If(ThisItem.RespNome = "Sem responsável", corVermelho, corTexto)
+                  Text: =ThisItem.RespNome
+                  OnSelect: =Select(Parent)
+            - recTdLinhaSep:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =Parent.TemplateHeight - 1
+                  Width: =Parent.TemplateWidth
+                  Height: =1
+                  Fill: =ColorValue("#EEF1F3")
+      - lblTdVazio:
+          Control: Label@2.5.1
+          Properties:
+            X: =0
+            Y: =80
+            Width: =Parent.Width
+            Height: =40
+            Align: =Align.Center
+            Size: =10
+            Color: =corSuave
+            Text: ="Nenhuma solicitação com esses filtros"
+            Visible: =CountRows(galTdLinhas.AllItems) = 0
+- recTdFundo:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =RGBA(23, 33, 43, 0.35)
+      Visible: =varTdPainel
+      OnSelect: =Set(varTdPainel, false)
+- conTdPainel:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =Parent.Width - 480
+      Y: =0
+      Width: =480
+      Height: =Parent.Height
+      Fill: =Color.White
+      DropShadow: =DropShadow.ExtraBold
+      Visible: =varTdPainel
+    Children:
+      - lblTpCodigo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =16
+            Width: =300
+            Height: =24
+            Size: =9
+            Color: =corSuave
+            Text: =varTd.Codigo & "  ·  " & varTd.StatusTxt
+      - icoTpFechar:
+          Control: Classic/Icon@2.5.0
+          Properties:
+            X: =Parent.Width - 52
+            Y: =14
+            Width: =30
+            Height: =30
+            PaddingTop: =6
+            PaddingBottom: =6
+            PaddingLeft: =6
+            PaddingRight: =6
+            Icon: =Icon.Cancel
+            Color: =corSuave
+            OnSelect: =Set(varTdPainel, false)
+      - lblTpTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =44
+            Width: =Parent.Width - 48
+            Height: =30
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =varTd.Desc
+      - lblTpMeta:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =72
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =8
+            Color: =If(varTd.Atrasada, corVermelho, corSuave)
+            Text: =If(varTd.Atrasada, "Atrasada há " & varTd.DiasAtraso & " dia(s)  ·  ", "") & varTd.TipoTxt & "  ·  " & varTd.AreaTxt
+      - htmlTpDados:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            X: =14
+            Y: =96
+            Width: =Parent.Width - 28
+            Height: =250
+            HtmlText: |-
+              ="<div style='font-family:Segoe UI,sans-serif;font-size:12px;color:#1F2933'><table style='width:100%;border-collapse:collapse'>" &
+              Concat(
+                  Table(
+                      {k: "Solicitante", v: varTd.SolNome},
+                      {k: "Fiscal", v: varTd.FiscalNome},
+                      {k: "Classificação", v: varTd.ClassTxt},
+                      {k: "Responsável", v: varTd.RespNome},
+                      {k: "Prioridade", v: varTd.PrioTxt},
+                      {k: "Recebida em", v: Text(varTd.DtReceb, "dd/mm/yyyy")},
+                      {k: "Prazo solicitado", v: Text(varTd.PrazoSolicitado, "dd/mm/yyyy")},
+                      {k: "Prazo acordado", v: Text(varTd.PrazoAcordado, "dd/mm/yyyy")},
+                      {k: "Concluída em", v: Text(varTd.DtConcl, "dd/mm/yyyy") & If(IsBlank(varTd.DtConcl), "", If(varTd.NoPrazo, " (no prazo)", " (após o prazo)"))},
+                      {k: "Justificativa", v: varTd.JustifTxt},
+                      {k: "Orientação", v: varTd.Orientacao},
+                      {k: "Aguardando", v: varTd.MotivoAguardando},
+                      {k: "Motivo da recusa", v: varTd.MotivoRecusa},
+                      {k: "Nº contrato", v: varTd.NumeroContrato},
+                      {k: "Fornecedor", v: varTd.Fornecedor}
+                  ),
+                  If(IsBlank(v), "",
+                      "<tr><td style='padding:5px 0;color:#5F6B76;width:34%;vertical-align:top;border-bottom:1px solid #EEF1F3'>" & k &
+                      "</td><td style='padding:5px 0;border-bottom:1px solid #EEF1F3'>" & v & "</td></tr>")
+              ) &
+              "</table></div>"
+      - lblTpRotHist:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =354
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="HISTÓRICO"
+      - galTpHist:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =24
+            Y: =376
+            Width: =Parent.Width - 48
+            Height: =Parent.Height - 376 - 76
+            TemplateSize: =54
+            TemplatePadding: =0
+            Items: =SortByColumns(Filter(HistoricoSolicitacoes, SolicitacaoID = varTd.ID), "DataHora", SortOrder.Descending)
+          Children:
+            - cirTpHist:
+                Control: Circle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =8
+                  Width: =8
+                  Height: =8
+                  Fill: =corPrimaria
+            - recTpHistFio:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =3
+                  Y: =18
+                  Width: =2
+                  Height: =Parent.TemplateHeight - 14
+                  Fill: =corBorda
+            - lblTpHistTitulo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =0
+                  Width: =Parent.TemplateWidth - 16
+                  Height: =22
+                  Size: =9
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =ThisItem.Title
+            - lblTpHistSub:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =20
+                  Width: =Parent.TemplateWidth - 16
+                  Height: =30
+                  Size: =8
+                  VerticalAlign: =VerticalAlign.Top
+                  Color: =corSuave
+                  Text: |-
+                    =Text(ThisItem.DataHora, "dd/mm/yyyy hh:mm") & "  ·  " & (If(CountRows(Split(Trim(ThisItem.Usuario.DisplayName), " ")) > 1, First(Split(Trim(ThisItem.Usuario.DisplayName), " ")).Value & " " & Last(Split(Trim(ThisItem.Usuario.DisplayName), " ")).Value, Trim(ThisItem.Usuario.DisplayName))) &
+                    If(IsBlank(ThisItem.Mensagem), "", "  ·  """ & Left(ThisItem.Mensagem, 70) & If(Len(ThisItem.Mensagem) > 70, "…", "") & """")
+      - lblTpHistCriada:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =Parent.Height - 76 - 22
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =8
+            Color: =corSuave
+            Text: =Text(varTd.DtReceb, "dd/mm/yyyy hh:mm") & "  ·  Recebida de " & varTd.SolNome
+      - btnTpQuadro:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24
+            Y: =Parent.Height - 60
+            Width: =(Parent.Width - 48 - 10) / 2
+            Height: =40
+            Text: ="Abrir no quadro"
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Fill: =corPrimaria
+            HoverFill: =corPrimariaEsc
+            PressedFill: =corPrimariaEsc
+            Color: =Color.White
+            HoverColor: =Color.White
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =!varTd.Fechada || varTd.StatusTxt = "Concluída"
+            OnSelect: |-
+              =Set(varQd, varTd);
+              Set(varQdPode, nfPapel = "Coordenador" || varTd.RespEmail = nfEu);
+              Set(varAbrirPainelQd, true);
+              Set(varTdPainel, false);
+              Navigate(scrQuadro, ScreenTransition.None)
+      - btnTpLists:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24 + (Parent.Width - 48 - 10) / 2 + 10
+            Y: =Parent.Height - 60
+            Width: =(Parent.Width - 48 - 10) / 2
+            Height: =40
+            Text: ="Abrir no Lists"
+            Size: =10
+            Fill: =Color.White
+            HoverFill: =corColuna
+            PressedFill: =corPrimariaClara
+            Color: =corTexto
+            HoverColor: =corTexto
+            BorderColor: =corBordaForte
+            BorderThickness: =1
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            OnSelect: =Launch(varTd.'Link to item')

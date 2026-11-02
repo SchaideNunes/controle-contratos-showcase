@@ -1,0 +1,679 @@
+- lblDsTitulo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =16
+      Width: =600
+      Height: =36
+      Size: =17
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+      Text: ="Distribuição da equipe"
+- lblDsSub:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =50
+      Width: =900
+      Height: =22
+      Size: =9
+      Color: =corSuave
+      Text: ="Solicitações em aberto por pessoa  ·  use os botões para atribuir ou clique num card para repassar"
+- btnDsAtualizar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =24
+      Width: =120
+      Height: =36
+      Text: ="Atualizar"
+      Size: =10
+      Fill: =Color.White
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderColor: =corBordaForte
+      BorderThickness: =1
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Refresh(SolicitacoesContrato); Refresh(EquipeContratos)
+- recDsLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =84
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- conDsSemResp:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252
+      Y: =100
+      Width: =290
+      Height: =Parent.Height - 100 - 16
+      Fill: =ColorValue("#FBEDE9")
+      BorderColor: =ColorValue("#E3A897")
+      BorderThickness: =1
+      BorderStyle: =BorderStyle.Dashed
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblDsSemTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =14
+            Y: =10
+            Width: =Parent.Width - 80
+            Height: =26
+            Size: =11
+            FontWeight: =FontWeight.Semibold
+            Color: =ColorValue("#8A2C14")
+            Text: ="Sem responsável"
+      - lblDsSemQtd:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 54
+            Y: =12
+            Width: =40
+            Height: =22
+            Align: =Align.Center
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Fill: =Color.White
+            Color: =ColorValue("#8A2C14")
+            Text: =CountRows(galDsSem.AllItems)
+      - lblDsSemSub:
+          Control: Label@2.5.1
+          Properties:
+            X: =14
+            Y: =34
+            Width: =Parent.Width - 28
+            Height: =20
+            Size: =8
+            Color: =ColorValue("#8A2C14")
+            Text: ="Aguardando distribuição · atribuir num clique"
+      - galDsSem:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =10
+            Y: =60
+            Width: =Parent.Width - 20
+            Height: =Parent.Height - 66
+            TemplateSize: =136
+            TemplatePadding: =0
+            Items: |-
+              =SortByColumns(
+                  Filter(nfSol, !Fechada && RespNome = "Sem responsável"),
+                  "OrdemPrio", SortOrder.Ascending,
+                  "DtPrazo", SortOrder.Ascending
+              )
+          Children:
+            - recDsSemCard:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 10
+                  Fill: =Color.White
+                  BorderColor: =ColorValue("#DDE3E8")
+                  BorderThickness: =1
+            - btnDsSemPrio:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =12
+                  Y: =10
+                  Width: =74
+                  Height: =20
+                  Text: =ThisItem.PrioRotulo
+                  Size: =8
+                  FontWeight: =FontWeight.Semibold
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  Color: =ThisItem.PrioCor
+                  HoverColor: =Self.Color
+                  Fill: =ThisItem.PrioFundo
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  BorderThickness: =0
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+            - lblDsSemPrazo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =90
+                  Y: =8
+                  Width: =Parent.TemplateWidth - 100
+                  Height: =24
+                  Align: =Align.Right
+                  Size: =8
+                  FontWeight: =FontWeight.Semibold
+                  Color: =If(ThisItem.Atrasada, corVermelho, corAmbar)
+                  Text: =If(ThisItem.Atrasada, "Atrasada · ", "Vence ") & Text(ThisItem.DtPrazo, "dd/mm")
+            - lblDsSemTitulo2:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =34
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =22
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =Upper(ThisItem.Desc)
+            - lblDsSemMeta:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =56
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =20
+                  Size: =8
+                  Color: =corSuave
+                  Text: =ThisItem.TipoTxt & " · " & ThisItem.AreaTxt & " · " & ThisItem.SolNome
+            - recDsSemSep:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =12
+                  Y: =82
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =1
+                  Fill: =ColorValue("#EEF1F3")
+            - galDsSemPessoas:
+                Control: Gallery@2.15.0
+                Variant: Horizontal
+                Properties:
+                  X: =10
+                  Y: =88
+                  Width: =Parent.TemplateWidth - 20
+                  Height: =34
+                  TemplateSize: =(Parent.TemplateWidth - 20) / Max(1, Min(3, CountRows(nfEquipe)))
+                  TemplatePadding: =0
+                  ShowScrollbar: =false
+                  Items: =AddColumns(nfEquipe, SolID, ThisItem.ID)
+                  Visible: =nfPapel = "Coordenador"
+                Children:
+                  - btnDsAtribuirRapido:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        X: =0
+                        Y: =2
+                        Width: =Parent.TemplateWidth - 6
+                        Height: =30
+                        Text: =If(ThisItem.Email = nfEu, "Eu", First(Split(ThisItem.Nome, " ")).Value)
+                        Size: =9
+                        Fill: =Color.White
+                        HoverFill: =ColorValue("#EEF3F7")
+                        PressedFill: =corPrimariaClara
+                        Color: =corTexto
+                        HoverColor: =corPrimariaEsc
+                        BorderColor: =corBordaForte
+                        BorderThickness: =1
+                        RadiusTopLeft: =4
+                        RadiusTopRight: =4
+                        RadiusBottomLeft: =4
+                        RadiusBottomRight: =4
+                        OnSelect: |-
+                          =With(
+                              {
+                                  orig: LookUp(nfSol, ID = ThisItem.SolID),
+                                  pessoa: ThisItem,
+                                  s: LookUp(SolicitacoesContrato, ID = ThisItem.SolID),
+                                  resp: {
+                                      Claims: "i:0#.f|membership|" & ThisItem.Email,
+                                      DisplayName: ThisItem.Nome,
+                                      Email: ThisItem.Email,
+                                      Department: "",
+                                      JobTitle: "",
+                                      Picture: ""
+                                  }
+                              },
+                              Patch(SolicitacoesContrato, s, {
+                                  Status: {Value: If(orig.StatusTxt = "Nova", "Em andamento", orig.StatusTxt)},
+                                  Responsavel: resp,
+                                  ResponsavelProximaAcao: resp,
+                                  PrazoAcordado: Coalesce(s.PrazoAcordado, s.PrazoSolicitado),
+                                  DataAtribuicao: Now()
+                              });
+                              Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                                  Title: "Atribuída para " & pessoa.Nome,
+                                  SolicitacaoID: orig.ID,
+                                  Acao: {Value: "Atribuída"},
+                                  CampoAlterado: "Responsavel",
+                                  ValorAnterior: "",
+                                  ValorNovo: pessoa.Nome,
+                                  Usuario: nfEuPessoa,
+                                  DataHora: Now()
+                              });
+                              If(pessoa.Email <> nfEu,
+                                  Office365Outlook.SendEmailV2(
+                                      pessoa.Email,
+                                      "Nova solicitação para você: " & orig.Codigo & " · " & orig.Desc,
+                                      "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                                      "<p>Olá, " & First(Split(pessoa.Nome, " ")).Value & ".</p>" &
+                                      "<p>A solicitação <b>" & orig.Codigo & " · " & orig.Desc & "</b> (" & orig.TipoTxt & ", " & orig.AreaTxt &
+                                      ") foi atribuída para você. Prazo: <b>" & Text(orig.DtPrazo, "dd/mm/yyyy") & "</b>.</p>" &
+                                      "<p style='color:#5F6B76'>" & User().FullName & "<br>Coordenação de Contratos</p></div>"
+                                  )
+                              );
+                              If(orig.StatusTxt = "Nova" && !IsBlank(orig.SolEmail),
+                                  Office365Outlook.SendEmailV2(
+                                      orig.SolEmail,
+                                      "Sua solicitação foi aceita: " & orig.Codigo & " · " & orig.Desc,
+                                      "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                                      "<p>Olá, " & First(Split(orig.SolNome, " ")).Value & ".</p>" &
+                                      "<p>Sua solicitação <b>" & orig.Codigo & " · " & orig.Desc & "</b> foi aceita e está com <b>" & pessoa.Nome &
+                                      "</b>. Prazo previsto: <b>" & Text(orig.DtPrazo, "dd/mm/yyyy") & "</b>.</p>" &
+                                      "<p>Você receberá outro e-mail quando ela for concluída.</p>" &
+                                      "<p style='color:#5F6B76'>" & User().FullName & "<br>Coordenação de Contratos</p></div>"
+                                  )
+                              );
+                              Refresh(SolicitacoesContrato);
+                              Notify("Atribuída para " & pessoa.Nome, NotificationType.Success)
+                          )
+            - lblDsSemSomente:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =88
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =32
+                  Size: =8
+                  Italic: =true
+                  Color: =corSuave
+                  Text: ="A coordenação vai distribuir"
+                  Visible: =nfPapel <> "Coordenador"
+      - lblDsSemVazio:
+          Control: Label@2.5.1
+          Properties:
+            X: =10
+            Y: =80
+            Width: =Parent.Width - 20
+            Height: =40
+            Align: =Align.Center
+            Size: =9
+            Color: =ColorValue("#8A2C14")
+            Text: ="Tudo distribuído"
+            Visible: =CountRows(galDsSem.AllItems) = 0
+- galDsEquipe:
+    Control: Gallery@2.15.0
+    Variant: Horizontal
+    Properties:
+      X: =556
+      Y: =100
+      Width: =Parent.Width - 556 - 18
+      Height: =Parent.Height - 100 - 16
+      TemplateSize: =Max(290, Self.Width / Max(1, CountRows(nfEquipe)))
+      TemplatePadding: =0
+      Items: |-
+        =With(
+            {abertas: Filter(nfSol, !Fechada)},
+            With(
+                {t: AddColumns(nfEquipe,
+                    Abertas, CountRows(Filter(abertas, RespEmail = Email)),
+                    Atr, CountRows(Filter(abertas, Atrasada && RespEmail = Email))
+                )},
+                AddColumns(t, Pct, If(Max(t, Abertas) = 0, 0, Abertas / Max(t, Abertas)))
+            )
+        )
+    Children:
+      - recDsColFundo:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth - 14
+            Height: =Parent.TemplateHeight
+            Fill: =corColuna
+      - btnDsColAvatar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =14
+            Y: =12
+            Width: =32
+            Height: =32
+            Text: =Upper(Left(ThisItem.Nome, 1) & Left(Last(Split(ThisItem.Nome, " ")).Value, 1))
+            Size: =8
+            FontWeight: =FontWeight.Bold
+            PaddingLeft: =0
+            PaddingRight: =0
+            Fill: =If(ThisItem.Email = nfEu, corPrimaria, corPrimariaClara)
+            HoverFill: =Self.Fill
+            PressedFill: =Self.Fill
+            Color: =If(ThisItem.Email = nfEu, Color.White, corPrimariaEsc)
+            HoverColor: =Self.Color
+            BorderThickness: =0
+            RadiusTopLeft: =16
+            RadiusTopRight: =16
+            RadiusBottomLeft: =16
+            RadiusBottomRight: =16
+      - lblDsColNome:
+          Control: Label@2.5.1
+          Properties:
+            X: =54
+            Y: =8
+            Width: =Parent.TemplateWidth - 14 - 66
+            Height: =22
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =ThisItem.Nome & If(ThisItem.Email = nfEu, " (você)", "")
+      - lblDsColInfo:
+          Control: Label@2.5.1
+          Properties:
+            X: =54
+            Y: =28
+            Width: =Parent.TemplateWidth - 14 - 66
+            Height: =20
+            Size: =8
+            Color: =corSuave
+            Text: =ThisItem.PapelTxt & "  ·  " & ThisItem.Abertas & " em aberto  ·  " & ThisItem.Atr & " atrasada(s)"
+      - recDsColTrilho:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =14
+            Y: =54
+            Width: =Parent.TemplateWidth - 14 - 28
+            Height: =6
+            Fill: =Color.White
+      - recDsColBarra:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =14
+            Y: =54
+            Width: =(Parent.TemplateWidth - 14 - 28) * ThisItem.Pct
+            Height: =6
+            Fill: =corPrimaria
+            Visible: =ThisItem.Abertas > 0
+      - recDsColBarraAtr:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =14
+            Y: =54
+            Width: =(Parent.TemplateWidth - 14 - 28) * ThisItem.Pct * If(ThisItem.Abertas = 0, 0, ThisItem.Atr / ThisItem.Abertas)
+            Height: =6
+            Fill: =corVermelho
+            Visible: =ThisItem.Atr > 0
+      - galDsCards:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =10
+            Y: =70
+            Width: =Parent.TemplateWidth - 34
+            Height: =Parent.TemplateHeight - 76
+            TemplateSize: =94
+            TemplatePadding: =0
+            Items: |-
+              =SortByColumns(
+                  Filter(nfSol, !Fechada && RespEmail = ThisItem.Email),
+                  "DiasAtraso", SortOrder.Descending,
+                  "OrdemPrio", SortOrder.Ascending
+              )
+            OnSelect: |-
+              =If(nfPapel = "Coordenador",
+                  Set(varDsCard, ThisItem);
+                  Set(varDsModal, true)
+              )
+          Children:
+            - recDsCard:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 8
+                  Fill: =Color.White
+                  BorderColor: =ColorValue("#DDE3E8")
+                  BorderThickness: =1
+                  OnSelect: =Select(Parent)
+            - recDsCardAtr:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =3
+                  Height: =Parent.TemplateHeight - 8
+                  Fill: =corVermelho
+                  Visible: =ThisItem.Atrasada
+                  OnSelect: =Select(Parent)
+            - lblDsCardStatus:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =6
+                  Width: =(Parent.TemplateWidth - 24) / 2
+                  Height: =22
+                  Size: =8
+                  FontWeight: =FontWeight.Semibold
+                  Color: =Switch(ThisItem.Coluna, "Aguardando", ColorValue("#0E7490"), "Novas", ColorValue("#B7791F"), corPrimaria)
+                  Text: =ThisItem.StatusTxt
+                  OnSelect: =Select(Parent)
+            - lblDsCardPrazo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12 + (Parent.TemplateWidth - 24) / 2
+                  Y: =6
+                  Width: =(Parent.TemplateWidth - 24) / 2
+                  Height: =22
+                  Align: =Align.Right
+                  Size: =8
+                  FontWeight: =If(ThisItem.Atrasada, FontWeight.Semibold, FontWeight.Normal)
+                  Color: =If(ThisItem.Atrasada, corVermelho, corSuave)
+                  Text: =If(ThisItem.Atrasada, "Atrasada " & ThisItem.DiasAtraso & " dia(s)", "Vence " & Text(ThisItem.DtPrazo, "dd/mm"))
+                  OnSelect: =Select(Parent)
+            - lblDsCardTitulo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =28
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =24
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =Upper(ThisItem.Desc)
+                  OnSelect: =Select(Parent)
+            - lblDsCardMeta:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =52
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =22
+                  Size: =8
+                  Color: =corSuave
+                  Text: =ThisItem.PrioCurta & " · " & ThisItem.TipoTxt & " · " & ThisItem.AreaTxt
+                  OnSelect: =Select(Parent)
+      - lblDsColVazio:
+          Control: Label@2.5.1
+          Properties:
+            X: =10
+            Y: =90
+            Width: =Parent.TemplateWidth - 34
+            Height: =40
+            Align: =Align.Center
+            Size: =9
+            Color: =corSuave
+            Text: ="Nada em aberto"
+            Visible: =CountRows(galDsCards.AllItems) = 0
+- recDsModalFundo:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =RGBA(23, 33, 43, 0.45)
+      Visible: =varDsModal
+      OnSelect: =Set(varDsModal, false)
+- conDsRepassar:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =(Parent.Width - 460) / 2
+      Y: =(Parent.Height - 440) / 2
+      Width: =460
+      Height: =440
+      Fill: =Color.White
+      DropShadow: =DropShadow.ExtraBold
+      RadiusTopLeft: =10
+      RadiusTopRight: =10
+      RadiusBottomLeft: =10
+      RadiusBottomRight: =10
+      Visible: =varDsModal
+    Children:
+      - lblRpTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =16
+            Width: =Parent.Width - 80
+            Height: =30
+            Size: =14
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Repassar " & varDsCard.Codigo
+      - icoRpFechar:
+          Control: Classic/Icon@2.5.0
+          Properties:
+            X: =Parent.Width - 48
+            Y: =16
+            Width: =30
+            Height: =30
+            PaddingTop: =6
+            PaddingBottom: =6
+            PaddingLeft: =6
+            PaddingRight: =6
+            Icon: =Icon.Cancel
+            Color: =corSuave
+            OnSelect: =Set(varDsModal, false)
+      - lblRpSub:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =46
+            Width: =Parent.Width - 48
+            Height: =40
+            Size: =9
+            Color: =corSuave
+            Text: =varDsCard.Desc & "  ·  hoje com " & varDsCard.RespNome
+      - lblRpRot:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =92
+            Width: =Parent.Width - 48
+            Height: =22
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Passar para"
+      - galRpPessoas:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =24
+            Y: =116
+            Width: =Parent.Width - 48
+            Height: =Parent.Height - 116 - 20
+            TemplateSize: =58
+            TemplatePadding: =0
+            Items: =Filter(galDsEquipe.AllItems, Email <> varDsCard.RespEmail)
+          Children:
+            - btnRpPessoa:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =50
+                  Text: =""
+                  Fill: =Color.White
+                  HoverFill: =ColorValue("#EEF3F7")
+                  PressedFill: =corPrimariaClara
+                  BorderColor: =corBorda
+                  BorderThickness: =1
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  OnSelect: |-
+                    =With(
+                        {
+                            pessoa: ThisItem,
+                            antigo: varDsCard.RespNome,
+                            s: LookUp(SolicitacoesContrato, ID = varDsCard.ID),
+                            resp: {
+                                Claims: "i:0#.f|membership|" & ThisItem.Email,
+                                DisplayName: ThisItem.Nome,
+                                Email: ThisItem.Email,
+                                Department: "",
+                                JobTitle: "",
+                                Picture: ""
+                            }
+                        },
+                        Patch(SolicitacoesContrato, s,
+                            If(varDsCard.StatusTxt = "Aguardando solicitante",
+                                {Responsavel: resp},
+                                {Responsavel: resp, ResponsavelProximaAcao: resp}
+                            )
+                        );
+                        Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                            Title: "Repassada de " & antigo & " para " & pessoa.Nome,
+                            SolicitacaoID: varDsCard.ID,
+                            Acao: {Value: "Atribuída"},
+                            CampoAlterado: "Responsavel",
+                            ValorAnterior: antigo,
+                            ValorNovo: pessoa.Nome,
+                            Usuario: nfEuPessoa,
+                            DataHora: Now()
+                        });
+                        If(pessoa.Email <> nfEu,
+                            Office365Outlook.SendEmailV2(
+                                pessoa.Email,
+                                "Solicitação repassada para você: " & varDsCard.Codigo & " · " & varDsCard.Desc,
+                                "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                                "<p>Olá, " & First(Split(pessoa.Nome, " ")).Value & ".</p>" &
+                                "<p>A solicitação <b>" & varDsCard.Codigo & " · " & varDsCard.Desc & "</b> estava com " & antigo &
+                                " e agora está com você. Status: " & varDsCard.StatusTxt & ". Prazo: <b>" & Text(varDsCard.DtPrazo, "dd/mm/yyyy") & "</b>.</p>" &
+                                "<p style='color:#5F6B76'>" & User().FullName & "<br>Coordenação de Contratos</p></div>"
+                            )
+                        );
+                        Refresh(SolicitacoesContrato);
+                        Set(varDsModal, false);
+                        Notify("Repassada para " & pessoa.Nome, NotificationType.Success)
+                    )
+            - lblRpNome:
+                Control: Label@2.5.1
+                Properties:
+                  X: =14
+                  Y: =4
+                  Width: =Parent.TemplateWidth - 28
+                  Height: =24
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =ThisItem.Nome & If(ThisItem.Email = nfEu, " (você)", "")
+                  OnSelect: =Select(btnRpPessoa)
+            - lblRpCarga:
+                Control: Label@2.5.1
+                Properties:
+                  X: =14
+                  Y: =24
+                  Width: =Parent.TemplateWidth - 28
+                  Height: =20
+                  Size: =8
+                  Color: =corSuave
+                  Text: =ThisItem.Abertas & " em aberto  ·  " & ThisItem.Atr & " atrasada(s)"
+                  OnSelect: =Select(btnRpPessoa)

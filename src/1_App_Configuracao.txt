@@ -1,0 +1,160 @@
+==========================================================
+ CONTROLE DE CONTRATOS — CONFIGURAÇÃO DO APP
+==========================================================
+
+PASSO 1 — CRIE AS TELAS VAZIAS (com EXATAMENTE estes nomes)
+----------------------------------------------------------
+  scrInicio
+  scrCaixa
+  scrQuadro
+  scrDistribuicao
+  scrTodas
+  scrIndicadores
+  scrNova
+  scrMinhas
+  scrConfig
+
+Crie todas agora, mesmo vazias: a barra lateral navega entre elas e dá erro
+se alguma não existir. Em cada uma, coloque Fill = corFundo
+
+PASSO 2 — App.Formulas
+----------------------------------------------------------
+Selecione "App" na árvore > propriedade Formulas > cole tudo abaixo.
+
+// ---------- Cores ----------
+corPrimaria = ColorValue("#4A6982");
+corPrimariaEsc = ColorValue("#2F4A60");
+corPrimariaClara = ColorValue("#D7E1EA");
+corFundo = ColorValue("#F1F4F6");
+corLateral = ColorValue("#F8F9FA");
+corBorda = ColorValue("#E1E6EA");
+corBordaForte = ColorValue("#C9D2D9");
+corColuna = ColorValue("#E6EBEF");
+corTexto = ColorValue("#1F2933");
+corTextoMedio = ColorValue("#3E4C59");
+corSuave = ColorValue("#5F6B76");
+corVermelho = ColorValue("#B42318");
+corVermelhoBg = ColorValue("#FCEEEC");
+corVermelhoBorda = ColorValue("#F2C4BD");
+corVerde = ColorValue("#276749");
+corAmbar = ColorValue("#8A5A00");
+corAmbarBg = ColorValue("#FDF0D9");
+corAzulAgua = ColorValue("#0E5566");
+corAzulAguaBg = ColorValue("#DDF1F5");
+
+// ---------- Usuário logado ----------
+nfEu = Lower(User().Email);
+nfEuPessoa = {
+    Claims: "i:0#.f|membership|" & Lower(User().Email),
+    DisplayName: User().FullName,
+    Email: Lower(User().Email),
+    Department: "",
+    JobTitle: "",
+    Picture: ""
+};
+nfPapel = Coalesce(
+    LookUp(EquipeContratos, Lower(Usuario.Email) = Lower(User().Email) && Ativo).Papel.Value,
+    "Solicitante"
+);
+nfEhEquipe = nfPapel in ["Coordenador", "Analista", "Gestor"];
+
+// ---------- Equipe ativa ----------
+nfEquipe = SortByColumns(
+    AddColumns(
+        Filter(EquipeContratos, Ativo && Papel.Value <> "Gestor"),
+        Nome, If(CountRows(Split(Trim(Usuario.DisplayName), " ")) > 1, First(Split(Trim(Usuario.DisplayName), " ")).Value & " " & Last(Split(Trim(Usuario.DisplayName), " ")).Value, Trim(Usuario.DisplayName)),
+        Email, Lower(Usuario.Email),
+        PapelTxt, Papel.Value
+    ),
+    "Ordem", SortOrder.Ascending
+);
+
+// ---------- Solicitações (ÚNICO lugar que conhece as colunas da lista) ----------
+// JustificativaPrazo: enquanto for Escolha use JustificativaPrazo.Value;
+// quando virar "Várias linhas de texto", troque por apenas JustificativaPrazo
+nfSol = AddColumns(
+    Filter(SolicitacoesContrato, Excluida <> true),
+    Codigo, Title,
+    TipoTxt, TipoDemanda.Value,
+    AreaTxt, AreaSolicitante.Value,
+    Desc, Descricao,
+    JustifTxt, JustificativaPrazo.Value,
+    PrioTxt, Prioridade.Value,
+    StatusTxt, Status.Value,
+    SolNome, If(CountRows(Split(Trim(Solicitante.DisplayName), " ")) > 1, First(Split(Trim(Solicitante.DisplayName), " ")).Value & " " & Last(Split(Trim(Solicitante.DisplayName), " ")).Value, Trim(Solicitante.DisplayName)),
+    SolEmail, Lower(Solicitante.Email),
+    RespNome, If(IsBlank(Responsavel.DisplayName), "Sem responsável", If(CountRows(Split(Trim(Responsavel.DisplayName), " ")) > 1, First(Split(Trim(Responsavel.DisplayName), " ")).Value & " " & Last(Split(Trim(Responsavel.DisplayName), " ")).Value, Trim(Responsavel.DisplayName))),
+    RespEmail, Lower(Responsavel.Email),
+    ProxNome, If(CountRows(Split(Trim(ResponsavelProximaAcao.DisplayName), " ")) > 1, First(Split(Trim(ResponsavelProximaAcao.DisplayName), " ")).Value & " " & Last(Split(Trim(ResponsavelProximaAcao.DisplayName), " ")).Value, Trim(ResponsavelProximaAcao.DisplayName)),
+    DtReceb, DataRecebimento,
+    DtPrazo, Coalesce(PrazoAcordado, PrazoSolicitado),
+    DtConcl, DataConclusao,
+    Fechada, Status.Value in ["Concluída", "Cancelada", "Recusada"],
+    Atrasada, !(Status.Value in ["Concluída", "Cancelada", "Recusada"]) && Coalesce(PrazoAcordado, PrazoSolicitado) < Today(),
+    DiasAtraso, DateDiff(Coalesce(PrazoAcordado, PrazoSolicitado), Today(), TimeUnit.Days),
+    OrdemPrio, If("P0" in Prioridade.Value, 0, "P1" in Prioridade.Value, 1, "P2" in Prioridade.Value, 2, 3),
+    PrioCurta, If("P0" in Prioridade.Value, "P0", "P1" in Prioridade.Value, "P1", "P2" in Prioridade.Value, "P2", "P3"),
+    PrioRotulo, Coalesce(LookUp(nfPrioridades, Valor = Prioridade.Value).Rotulo, Prioridade.Value),
+    PrioCor, Coalesce(LookUp(nfPrioridades, Valor = Prioridade.Value).Cor, corTextoMedio),
+    PrioFundo, Coalesce(LookUp(nfPrioridades, Valor = Prioridade.Value).Fundo, ColorValue("#E3E8EC")),
+    ClassTxt, Classificacao.Value,
+    FiscalNome, If(IsBlank(FiscalServico.DisplayName), "N/A", If(CountRows(Split(Trim(FiscalServico.DisplayName), " ")) > 1, First(Split(Trim(FiscalServico.DisplayName), " ")).Value & " " & Last(Split(Trim(FiscalServico.DisplayName), " ")).Value, Trim(FiscalServico.DisplayName))),
+    FiscalEmail, Lower(FiscalServico.Email),
+    Coluna, Switch(Status.Value,
+        "Nova", "Novas",
+        "Em andamento", "Em andamento",
+        "Aguardando solicitante", "Aguardando",
+        "Aguardando aprovação", "Aguardando",
+        "Concluída", "Concluídas",
+        "Outras"),
+    DiasAtend, If(IsBlank(DataConclusao), Blank(), DateDiff(DataRecebimento, DataConclusao, TimeUnit.Days)),
+    NoPrazo, !IsBlank(DataConclusao) && DataConclusao < DateAdd(Coalesce(PrazoAcordado, PrazoSolicitado), 1, TimeUnit.Days)
+);
+
+// ---------- Prioridades (rótulo e cores de cada uma) ----------
+nfPrioridades = Table(
+    {Valor: "Crítica - P0", Rotulo: "Crítica · P0", Cor: ColorValue("#FFFFFF"), Fundo: ColorValue("#9B1C1C")},
+    {Valor: "Alta - P1", Rotulo: "Alta · P1", Cor: ColorValue("#8A3B0E"), Fundo: ColorValue("#FBE3D3")},
+    {Valor: "Média - P2", Rotulo: "Média · P2", Cor: ColorValue("#6B4E00"), Fundo: ColorValue("#FCEFCF")},
+    {Valor: "Baixa - P3", Rotulo: "Baixa · P3", Cor: ColorValue("#3E4C59"), Fundo: ColorValue("#E3E8EC")}
+);
+
+// ---------- Pedidos de alteração pendentes ----------
+nfPedidos = Filter(PedidosAlteracao, StatusPedido.Value = "Pendente");
+
+// ---------- Menu lateral ----------
+nfMenu = Table(
+    {Nome: "Início", Tela: "scrInicio", Badge: 0},
+    {Nome: "Caixa de entrada", Tela: "scrCaixa", Badge: CountRows(Filter(nfSol, StatusTxt = "Nova"))},
+    {Nome: "Quadro", Tela: "scrQuadro", Badge: 0},
+    {Nome: "Distribuição", Tela: "scrDistribuicao", Badge: 0},
+    {Nome: "Todas as solicitações", Tela: "scrTodas", Badge: 0},
+    {Nome: "Indicadores", Tela: "scrIndicadores", Badge: 0}
+);
+
+PASSO 3 — App.StartScreen
+----------------------------------------------------------
+If(nfEhEquipe, scrInicio, scrMinhas)
+
+(Quem não está na EquipeContratos cai direto em "Minhas solicitações".)
+
+PASSO 4 — Configurações
+----------------------------------------------------------
+Configurações > Geral > Limite de linhas de dados = 2000
+Configurações > Recursos futuros > "Fórmulas nomeadas" precisa estar LIGADO
+(nas versões novas já vem ligado por padrão).
+
+COMO ATUALIZAR OS DADOS
+----------------------------------------------------------
+Como tudo está em fórmulas nomeadas (nfSol, nfPedidos...), basta chamar
+Refresh(SolicitacoesContrato) que todas as telas recalculam sozinhas.
+O botão "Atualizar" de cada tela já faz isso.
+
+COMO COLAR AS TELAS
+----------------------------------------------------------
+1. Selecione a tela na árvore (ex.: scrInicio).
+2. Clique com o botão direito > Colar (ou Ctrl+V) com o conteúdo do
+   2_BarraLateral.yaml. Faça isso em TODAS as telas, exceto scrNova.
+   O Power Apps vai renomear os controles para galMenu_1, galMenu_2...
+   Isso é normal e não quebra nada.
+3. Depois cole o arquivo da tela (ex.: 3_scrInicio.yaml) na mesma tela.

@@ -1,0 +1,556 @@
+- lblMnTitulo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =16
+      Width: =600
+      Height: =36
+      Size: =17
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+      Text: ="Minhas solicitações"
+- lblMnSub:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =50
+      Width: =900
+      Height: =22
+      Size: =9
+      Color: =corSuave
+      Text: |-
+        =With({m: Filter(nfSol, SolEmail = nfEu)},
+            "Olá, " & First(Split(User().FullName, " ")).Value & "  ·  " &
+            CountRows(Filter(m, !Fechada)) & " em andamento  ·  " &
+            CountRows(Filter(m, StatusTxt = "Aguardando solicitante")) & " aguardando você"
+        )
+- btnMnAtualizar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =24
+      Width: =120
+      Height: =36
+      Text: ="Atualizar"
+      Size: =10
+      Fill: =Color.White
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderColor: =corBordaForte
+      BorderThickness: =1
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Refresh(SolicitacoesContrato); Refresh(HistoricoSolicitacoes)
+- recMnLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =84
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- galMnAbas:
+    Control: Gallery@2.15.0
+    Variant: Horizontal
+    Properties:
+      X: =228
+      Y: =90
+      Width: =340
+      Height: =40
+      TemplateSize: =112
+      TemplatePadding: =0
+      ShowScrollbar: =false
+      Items: |-
+        =With({m: Filter(nfSol, SolEmail = nfEu)},
+            Table(
+                {Aba: "Em aberto", Qtd: CountRows(Filter(m, !Fechada))},
+                {Aba: "Encerradas", Qtd: CountRows(Filter(m, Fechada))},
+                {Aba: "Todas", Qtd: CountRows(m)}
+            )
+        )
+    Children:
+      - btnMnAba:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth - 4
+            Height: =38
+            Text: =ThisItem.Aba & " · " & ThisItem.Qtd
+            Size: =10
+            FontWeight: =If(Coalesce(varMnAba, "Em aberto") = ThisItem.Aba, FontWeight.Semibold, FontWeight.Normal)
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =corColuna
+            PressedFill: =corPrimariaClara
+            Color: =If(Coalesce(varMnAba, "Em aberto") = ThisItem.Aba, corPrimariaEsc, corTextoMedio)
+            HoverColor: =Self.Color
+            BorderThickness: =0
+            OnSelect: =Set(varMnAba, ThisItem.Aba)
+      - recMnAbaSel:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =8
+            Y: =36
+            Width: =Parent.TemplateWidth - 20
+            Height: =2
+            Fill: =corPrimaria
+            Visible: =Coalesce(varMnAba, "Em aberto") = ThisItem.Aba
+- recMnListaBorda:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =579
+      Y: =130
+      Width: =1
+      Height: =Parent.Height - 130
+      Fill: =corBorda
+- recMnAbasLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =130
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- galMnLista:
+    Control: Gallery@2.15.0
+    Variant: Vertical
+    Properties:
+      X: =220
+      Y: =131
+      Width: =359
+      Height: =Parent.Height - 131
+      TemplateSize: =92
+      TemplatePadding: =0
+      TemplateFill: =If(ThisItem.IsSelected, Color.White, RGBA(0, 0, 0, 0))
+      Items: |-
+        =SortByColumns(
+            Filter(nfSol,
+                SolEmail = nfEu,
+                Switch(Coalesce(varMnAba, "Em aberto"), "Em aberto", !Fechada, "Encerradas", Fechada, true)
+            ),
+            "DtReceb", SortOrder.Descending
+        )
+    Children:
+      - recMnSel:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =3
+            Height: =Parent.TemplateHeight
+            Fill: =corPrimaria
+            Visible: =ThisItem.IsSelected
+      - lblMnItCodigo:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =10
+            Width: =150
+            Height: =20
+            Size: =8
+            Color: =corSuave
+            Text: =ThisItem.Codigo & "  ·  " & Text(ThisItem.DtReceb, "dd/mm/yyyy")
+            OnSelect: =Select(Parent)
+      - btnMnItStatus:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =Parent.TemplateWidth - 16 - 160
+            Y: =8
+            Width: =160
+            Height: =22
+            Text: =If(ThisItem.StatusTxt = "Aguardando solicitante", "Aguardando você", ThisItem.StatusTxt)
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            PaddingLeft: =0
+            PaddingRight: =0
+            Color: |-
+              =Switch(ThisItem.StatusTxt,
+                  "Nova", ColorValue("#7A4F0A"),
+                  "Em andamento", corPrimariaEsc,
+                  "Aguardando solicitante", corVermelho,
+                  "Aguardando aprovação", corAzulAgua,
+                  "Concluída", corVerde,
+                  corTextoMedio)
+            HoverColor: =Self.Color
+            Fill: |-
+              =Switch(ThisItem.StatusTxt,
+                  "Nova", corAmbarBg,
+                  "Em andamento", ColorValue("#DDE6EE"),
+                  "Aguardando solicitante", corVermelhoBg,
+                  "Aguardando aprovação", corAzulAguaBg,
+                  "Concluída", ColorValue("#E3F1E8"),
+                  ColorValue("#E3E8EC"))
+            HoverFill: =Self.Fill
+            PressedFill: =Self.Fill
+            BorderThickness: =0
+            RadiusTopLeft: =11
+            RadiusTopRight: =11
+            RadiusBottomLeft: =11
+            RadiusBottomRight: =11
+            OnSelect: =Select(Parent)
+      - lblMnItTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =34
+            Width: =Parent.TemplateWidth - 32
+            Height: =24
+            Size: =10
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =Upper(ThisItem.Desc)
+            OnSelect: =Select(Parent)
+      - lblMnItSub:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =58
+            Width: =Parent.TemplateWidth - 32
+            Height: =22
+            Size: =8
+            Color: =corSuave
+            Text: |-
+              =ThisItem.TipoTxt & "  ·  " &
+              If(ThisItem.RespNome = "Sem responsável", "aguardando triagem", "com " & ThisItem.RespNome) &
+              If(ThisItem.Fechada, "", "  ·  prazo " & Text(ThisItem.DtPrazo, "dd/mm"))
+            OnSelect: =Select(Parent)
+      - recMnItLinha:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =Parent.TemplateHeight - 1
+            Width: =Parent.TemplateWidth
+            Height: =1
+            Fill: =corBorda
+- lblMnVazio:
+    Control: Label@2.5.1
+    Properties:
+      X: =580
+      Y: =300
+      Width: =Parent.Width - 580
+      Height: =60
+      Align: =Align.Center
+      Size: =12
+      Color: =corSuave
+      Text: ="Você ainda não tem solicitações aqui. Use ""Nova solicitação"" para abrir uma."
+      Visible: =IsEmpty(galMnLista.AllItems)
+- conMnDetalhe:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =580
+      Y: =131
+      Width: =Parent.Width - 580
+      Height: =Parent.Height - 131
+      Fill: =Color.White
+      Visible: =!IsEmpty(galMnLista.AllItems)
+    Children:
+      - lblMnDetCodigo:
+          Control: Label@2.5.1
+          Properties:
+            X: =28
+            Y: =16
+            Width: =Parent.Width - 56
+            Height: =22
+            Size: =9
+            Color: =corSuave
+            Text: =galMnLista.Selected.Codigo & "  ·  " & galMnLista.Selected.TipoTxt & "  ·  " & galMnLista.Selected.AreaTxt
+      - lblMnDetTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =28
+            Y: =38
+            Width: =Parent.Width - 56
+            Height: =34
+            Size: =15
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: =galMnLista.Selected.Desc
+      - galMnEtapas:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            X: =28
+            Y: =84
+            Width: =Parent.Width - 56
+            Height: =56
+            TemplateSize: =Self.Width / 4
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            Items: |-
+              =With(
+                  {
+                      st: galMnLista.Selected.StatusTxt,
+                      atual: Switch(galMnLista.Selected.StatusTxt,
+                          "Nova", 1,
+                          "Em andamento", 3,
+                          "Aguardando solicitante", 3,
+                          "Aguardando aprovação", 3,
+                          "Concluída", 4,
+                          "Recusada", 2,
+                          "Cancelada", 2,
+                          1)
+                  },
+                  Table(
+                      {N: 1, Nome: "Recebida", Atual: atual},
+                      {N: 2, Nome: If(st in ["Recusada", "Cancelada"], st, "Aceita"), Atual: atual},
+                      {N: 3, Nome: If(st = "Aguardando solicitante", "Aguardando você", "Em andamento"), Atual: atual},
+                      {N: 4, Nome: "Concluída", Atual: atual}
+                  )
+              )
+          Children:
+            - recMnEtapaFio:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =12
+                  Width: =Parent.TemplateWidth
+                  Height: =3
+                  Fill: =If(ThisItem.N <= ThisItem.Atual, corPrimaria, corBorda)
+            - cirMnEtapa:
+                Control: Circle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =5
+                  Width: =17
+                  Height: =17
+                  Fill: |-
+                    =If(ThisItem.N = 2 && ThisItem.Nome in ["Recusada", "Cancelada"], corVermelho,
+                        ThisItem.N = 3 && ThisItem.Nome = "Aguardando você" && ThisItem.Atual = 3, corVermelho,
+                        ThisItem.N <= ThisItem.Atual, corPrimaria,
+                        Color.White)
+                  BorderColor: =If(ThisItem.N <= ThisItem.Atual, corPrimaria, corBordaForte)
+                  BorderThickness: =2
+            - lblMnEtapa:
+                Control: Label@2.5.1
+                Properties:
+                  X: =0
+                  Y: =26
+                  Width: =Parent.TemplateWidth - 8
+                  Height: =26
+                  Size: =9
+                  FontWeight: =If(ThisItem.N = ThisItem.Atual, FontWeight.Semibold, FontWeight.Normal)
+                  Color: =If(ThisItem.N <= ThisItem.Atual, corTexto, corSuave)
+                  Text: =ThisItem.Nome
+      - conMnAguardando:
+          Control: GroupContainer@1.3.0
+          Variant: ManualLayout
+          Properties:
+            X: =28
+            Y: =150
+            Width: =Parent.Width - 56
+            Height: =176
+            Fill: =corVermelhoBg
+            BorderColor: =corVermelhoBorda
+            BorderThickness: =1
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            Visible: =galMnLista.Selected.StatusTxt = "Aguardando solicitante"
+          Children:
+            - lblMnAgTitulo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =8
+                  Width: =Parent.Width - 32
+                  Height: =24
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corVermelho
+                  Text: =galMnLista.Selected.RespNome & " precisa de uma resposta sua"
+            - lblMnAgMotivo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =32
+                  Width: =Parent.Width - 32
+                  Height: =36
+                  Size: =10
+                  VerticalAlign: =VerticalAlign.Top
+                  Color: =corTexto
+                  Text: =Coalesce(galMnLista.Selected.MotivoAguardando, "Veja a última mensagem no histórico")
+            - txtMnResposta:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  X: =16
+                  Y: =72
+                  Width: =Parent.Width - 32 - 150
+                  Height: =88
+                  Mode: =TextMode.MultiLine
+                  Default: =""
+                  HintText: ="Escreva sua resposta. Se precisar mandar arquivo, responda o e-mail que você recebeu"
+                  Size: =10
+                  Fill: =Color.White
+                  BorderColor: =corVermelhoBorda
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - btnMnResponder:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =Parent.Width - 16 - 140
+                  Y: =72
+                  Width: =140
+                  Height: =40
+                  Text: ="Responder"
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Fill: =corPrimaria
+                  HoverFill: =corPrimariaEsc
+                  PressedFill: =corPrimariaEsc
+                  Color: =Color.White
+                  HoverColor: =Color.White
+                  DisabledFill: =corBordaForte
+                  DisabledColor: =Color.White
+                  BorderThickness: =0
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  DisplayMode: =If(IsBlank(Trim(txtMnResposta.Text)), DisplayMode.Disabled, DisplayMode.Edit)
+                  OnSelect: |-
+                    =With(
+                        {
+                            orig: galMnLista.Selected,
+                            s: LookUp(SolicitacoesContrato, ID = galMnLista.Selected.ID),
+                            msg: Trim(txtMnResposta.Text)
+                        },
+                        Patch(SolicitacoesContrato, s, {
+                            Status: {Value: "Em andamento"},
+                            ResponsavelProximaAcao: s.Responsavel,
+                            MotivoAguardando: ""
+                        });
+                        Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                            Title: "Resposta do solicitante",
+                            SolicitacaoID: orig.ID,
+                            Acao: {Value: "Comentário"},
+                            CampoAlterado: "Status",
+                            ValorAnterior: "Aguardando solicitante",
+                            ValorNovo: "Em andamento",
+                            Mensagem: msg,
+                            Usuario: nfEuPessoa,
+                            DataHora: Now()
+                        });
+                        If(!IsBlank(orig.RespEmail),
+                            Office365Outlook.SendEmailV2(
+                                orig.RespEmail,
+                                "Resposta recebida: " & orig.Codigo & " · " & orig.Desc,
+                                "<div style='font-family:Segoe UI,sans-serif;font-size:14px;color:#1F2933'>" &
+                                "<p>" & User().FullName & " respondeu sobre a solicitação <b>" & orig.Codigo & " · " & orig.Desc & "</b>:</p>" &
+                                "<p style='background:#F5F7F9;padding:12px;border-radius:6px'>" & Substitute(msg, Char(10), "<br>") & "</p>" &
+                                "<p>A solicitação voltou para Em andamento.</p></div>"
+                            )
+                        )
+                    );
+                    Reset(txtMnResposta);
+                    Refresh(SolicitacoesContrato);
+                    Refresh(HistoricoSolicitacoes);
+                    Notify("Resposta enviada para " & galMnLista.Selected.RespNome, NotificationType.Success)
+      - htmlMnDados:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            X: =18
+            Y: =If(galMnLista.Selected.StatusTxt = "Aguardando solicitante", 334, 150)
+            Width: =(Parent.Width - 56) * 0.45
+            Height: =250
+            HtmlText: |-
+              ="<div style='font-family:Segoe UI,sans-serif;font-size:12px;color:#1F2933'>" &
+              "<div style='font-size:11px;font-weight:600;color:#5F6B76;margin-bottom:6px'>DADOS</div>" &
+              "<table style='width:100%;border-collapse:collapse'>" &
+              Concat(
+                  Table(
+                      {k: "Responsável", v: If(galMnLista.Selected.RespNome = "Sem responsável", "aguardando triagem", galMnLista.Selected.RespNome)},
+                      {k: "Prioridade", v: galMnLista.Selected.PrioTxt},
+                      {k: "Classificação", v: galMnLista.Selected.ClassTxt},
+                      {k: "Fiscal", v: galMnLista.Selected.FiscalNome},
+                      {k: "Enviada em", v: Text(galMnLista.Selected.DtReceb, "dd/mm/yyyy")},
+                      {k: "Prazo pedido", v: Text(galMnLista.Selected.PrazoSolicitado, "dd/mm/yyyy")},
+                      {k: "Prazo previsto", v: If(IsBlank(galMnLista.Selected.PrazoAcordado), "", Text(galMnLista.Selected.PrazoAcordado, "dd/mm/yyyy"))},
+                      {k: "Concluída em", v: Text(galMnLista.Selected.DtConcl, "dd/mm/yyyy")},
+                      {k: "Motivo da recusa", v: galMnLista.Selected.MotivoRecusa},
+                      {k: "Justificativa", v: galMnLista.Selected.JustifTxt}
+                  ),
+                  If(IsBlank(v), "",
+                      "<tr><td style='padding:5px 0;color:#5F6B76;width:40%;vertical-align:top;border-bottom:1px solid #EEF1F3'>" & k &
+                      "</td><td style='padding:5px 0;border-bottom:1px solid #EEF1F3'>" & v & "</td></tr>")
+              ) &
+              "</table></div>"
+      - lblMnRotHist:
+          Control: Label@2.5.1
+          Properties:
+            X: =28 + (Parent.Width - 56) * 0.45 + 24
+            Y: =If(galMnLista.Selected.StatusTxt = "Aguardando solicitante", 338, 154)
+            Width: =(Parent.Width - 56) * 0.55 - 24
+            Height: =20
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =corSuave
+            Text: ="ACOMPANHAMENTO"
+      - galMnHist:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =28 + (Parent.Width - 56) * 0.45 + 24
+            Y: =lblMnRotHist.Y + 24
+            Width: =(Parent.Width - 56) * 0.55 - 24
+            Height: =Parent.Height - (lblMnRotHist.Y + 24) - 16
+            TemplateSize: =70
+            TemplatePadding: =0
+            Items: =SortByColumns(Filter(HistoricoSolicitacoes, SolicitacaoID = galMnLista.Selected.ID), "DataHora", SortOrder.Descending)
+          Children:
+            - cirMnHist:
+                Control: Circle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =6
+                  Width: =8
+                  Height: =8
+                  Fill: =If(IsBlank(ThisItem.Mensagem), corBordaForte, corPrimaria)
+            - recMnHistFio:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =3
+                  Y: =16
+                  Width: =2
+                  Height: =Parent.TemplateHeight - 12
+                  Fill: =corBorda
+            - lblMnHistTitulo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =0
+                  Width: =Parent.TemplateWidth - 16
+                  Height: =20
+                  Size: =9
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =ThisItem.Title
+            - lblMnHistData:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =18
+                  Width: =Parent.TemplateWidth - 16
+                  Height: =18
+                  Size: =8
+                  Color: =corSuave
+                  Text: =Text(ThisItem.DataHora, "dd/mm/yyyy hh:mm") & "  ·  " & (If(CountRows(Split(Trim(ThisItem.Usuario.DisplayName), " ")) > 1, First(Split(Trim(ThisItem.Usuario.DisplayName), " ")).Value & " " & Last(Split(Trim(ThisItem.Usuario.DisplayName), " ")).Value, Trim(ThisItem.Usuario.DisplayName)))
+            - lblMnHistMsg:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =36
+                  Width: =Parent.TemplateWidth - 16
+                  Height: =30
+                  Size: =9
+                  VerticalAlign: =VerticalAlign.Top
+                  Color: =corTextoMedio
+                  Text: =ThisItem.Mensagem
+                  Visible: =!IsBlank(ThisItem.Mensagem)

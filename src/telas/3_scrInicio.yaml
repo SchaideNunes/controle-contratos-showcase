@@ -1,0 +1,608 @@
+- lblInicioTitulo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =16
+      Width: =600
+      Height: =36
+      Size: =17
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+      Text: =If(Hour(Now()) < 12, "Bom dia", Hour(Now()) < 18, "Boa tarde", "Boa noite") & ", " & First(Split(User().FullName, " ")).Value
+- lblInicioSub:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =50
+      Width: =800
+      Height: =22
+      Size: =9
+      Color: =corSuave
+      Text: |-
+        =Proper(Text(Today(), "dddd, dd/mm/yyyy", "pt-BR")) &
+        "  ·  " & CountRows(Filter(nfSol, !Fechada)) & " em aberto" &
+        "  ·  " & CountRows(Filter(nfSol, Atrasada)) & " atrasadas" &
+        "  ·  " & CountRows(Filter(nfSol, StatusTxt = "Nova")) & " novas para triar"
+- btnInicioAtualizar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 120
+      Y: =24
+      Width: =120
+      Height: =36
+      Text: ="Atualizar"
+      Size: =10
+      Fill: =Color.White
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderColor: =corBordaForte
+      BorderThickness: =1
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: =Refresh(SolicitacoesContrato); Refresh(PedidosAlteracao); Refresh(EquipeContratos)
+- recInicioLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =84
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- galInicioKpis:
+    Control: Gallery@2.15.0
+    Variant: Horizontal
+    Properties:
+      X: =252
+      Y: =100
+      Width: =Parent.Width - 252 - 20
+      Height: =96
+      TemplateSize: =Self.Width / 4
+      TemplatePadding: =0
+      ShowScrollbar: =false
+      Items: |-
+        =With(
+            {
+                novas: Filter(nfSol, StatusTxt = "Nova"),
+                atr: Filter(nfSol, Atrasada),
+                semana: Filter(nfSol, !Fechada && !Atrasada && DtPrazo <= DateAdd(Today(), 7, TimeUnit.Days))
+            },
+            Table(
+                {Titulo: "Novas para triar", Valor: CountRows(novas), Detalhe: If(IsEmpty(novas), "nada pendente", "a mais antiga há " & DateDiff(Min(novas, DtReceb), Now(), TimeUnit.Days) & " dia(s)"), Alerta: false, Tela: "scrCaixa"},
+                {Titulo: "Atrasadas", Valor: CountRows(atr), Detalhe: CountRows(Filter(atr, RespEmail = nfEu)) & " com você", Alerta: CountRows(atr) > 0, Tela: "scrQuadro"},
+                {Titulo: "Vencem em 7 dias", Valor: CountRows(semana), Detalhe: "até " & Text(DateAdd(Today(), 7, TimeUnit.Days), "dd/mm/yyyy"), Alerta: false, Tela: "scrQuadro"},
+                {Titulo: "Aprovações pendentes", Valor: CountRows(nfPedidos), Detalhe: "pedidos de alteração", Alerta: false, Tela: ""}
+            )
+        )
+    Children:
+      - recKpiFundo:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.TemplateWidth - 12
+            Height: =Parent.TemplateHeight
+            Fill: =If(ThisItem.Alerta, corVermelhoBg, Color.White)
+            BorderColor: =If(ThisItem.Alerta, corVermelhoBorda, corBorda)
+            BorderThickness: =1
+            OnSelect: |-
+              =Switch(ThisItem.Tela,
+                  "scrCaixa", Navigate(scrCaixa, ScreenTransition.None),
+                  "scrQuadro", Navigate(scrQuadro, ScreenTransition.None)
+              )
+      - lblKpiTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =10
+            Width: =Parent.TemplateWidth - 44
+            Height: =22
+            Size: =10
+            Color: =If(ThisItem.Alerta, corVermelho, corTextoMedio)
+            Text: =ThisItem.Titulo
+            OnSelect: =Select(recKpiFundo)
+      - lblKpiValor:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =30
+            Width: =Parent.TemplateWidth - 44
+            Height: =40
+            Size: =22
+            FontWeight: =FontWeight.Semibold
+            Color: =If(ThisItem.Alerta, corVermelho, corTexto)
+            Text: =ThisItem.Valor
+            OnSelect: =Select(recKpiFundo)
+      - lblKpiDetalhe:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =68
+            Width: =Parent.TemplateWidth - 44
+            Height: =20
+            Size: =9
+            Color: =If(ThisItem.Alerta, corVermelho, corSuave)
+            Text: =ThisItem.Detalhe
+            OnSelect: =Select(recKpiFundo)
+- conAtencao:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252
+      Y: =210
+      Width: =(Parent.Width - 284 - 14) * 0.58
+      Height: =Parent.Height - 210 - 20
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblAtencaoTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =10
+            Width: =Parent.Width - 160
+            Height: =30
+            Size: =12
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Precisa da sua atenção"
+      - btnAtencaoQuadro:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =Parent.Width - 130
+            Y: =12
+            Width: =112
+            Height: =28
+            Text: ="Abrir quadro"
+            Align: =Align.Right
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 0, 0, 0)
+            PressedFill: =RGBA(0, 0, 0, 0)
+            Color: =corPrimaria
+            HoverColor: =corPrimariaEsc
+            BorderThickness: =0
+            OnSelect: =Navigate(scrQuadro, ScreenTransition.None)
+      - galAtencao:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =0
+            Y: =46
+            Width: =Parent.Width
+            Height: =Parent.Height - 50
+            TemplateSize: =58
+            TemplatePadding: =0
+            Items: |-
+              =FirstN(
+                  SortByColumns(
+                      AddColumns(
+                          Filter(nfSol,
+                              StatusTxt = "Nova" || Atrasada ||
+                              (!Fechada && DtPrazo <= DateAdd(Today(), 7, TimeUnit.Days))
+                          ),
+                          Motivo, If(Atrasada, "Atrasada", StatusTxt = "Nova", "Triar", "Vence logo"),
+                          OrdemAtencao, If(Atrasada, 0, StatusTxt = "Nova", 1, 2)
+                      ),
+                      "OrdemAtencao", SortOrder.Ascending,
+                      "DtPrazo", SortOrder.Ascending
+                  ),
+                  30
+              )
+            OnSelect: |-
+              =Set(varSel, ThisItem);
+              If(ThisItem.StatusTxt = "Nova",
+                  Navigate(scrCaixa, ScreenTransition.None),
+                  Navigate(scrQuadro, ScreenTransition.None)
+              )
+          Children:
+            - recAtLinha:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =1
+                  Fill: =ColorValue("#EEF1F3")
+            - btnAtChip:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =16
+                  Y: =18
+                  Width: =92
+                  Height: =22
+                  Text: =ThisItem.Motivo
+                  Size: =8
+                  FontWeight: =FontWeight.Semibold
+                  Color: =Switch(ThisItem.Motivo, "Atrasada", corVermelho, "Triar", corAmbar, corPrimariaEsc)
+                  HoverColor: =Self.Color
+                  Fill: =Switch(ThisItem.Motivo, "Atrasada", corVermelhoBg, "Triar", corAmbarBg, ColorValue("#DDE6EE"))
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  BorderThickness: =0
+                  RadiusTopLeft: =11
+                  RadiusTopRight: =11
+                  RadiusBottomLeft: =11
+                  RadiusBottomRight: =11
+                  OnSelect: =Select(Parent)
+            - lblAtTitulo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =120
+                  Y: =8
+                  Width: =Parent.TemplateWidth - 120 - 110
+                  Height: =22
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =ThisItem.Desc
+                  OnSelect: =Select(Parent)
+            - lblAtSub:
+                Control: Label@2.5.1
+                Properties:
+                  X: =120
+                  Y: =30
+                  Width: =Parent.TemplateWidth - 120 - 110
+                  Height: =20
+                  Size: =8
+                  Color: =corSuave
+                  Text: |-
+                    =ThisItem.Codigo & "  ·  " & ThisItem.TipoTxt & "  ·  " &
+                    If(ThisItem.RespNome = "Sem responsável", ThisItem.SolNome, "com " & ThisItem.RespNome) &
+                    "  ·  " & ThisItem.PrioTxt
+                  OnSelect: =Select(Parent)
+            - lblAtDireita:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 112
+                  Y: =0
+                  Width: =96
+                  Height: =Parent.TemplateHeight
+                  Align: =Align.Right
+                  Size: =9
+                  FontWeight: =If(ThisItem.Motivo = "Atrasada", FontWeight.Semibold, FontWeight.Normal)
+                  Color: =Switch(ThisItem.Motivo, "Atrasada", corVermelho, "Triar", corAmbar, corSuave)
+                  Text: |-
+                    =Switch(ThisItem.Motivo,
+                        "Atrasada", ThisItem.DiasAtraso & " dia(s)",
+                        "Triar", "recebida " & Text(ThisItem.DtReceb, "dd/mm"),
+                        "vence " & Text(ThisItem.DtPrazo, "dd/mm")
+                    )
+                  OnSelect: =Select(Parent)
+      - lblAtencaoVazio:
+          Control: Label@2.5.1
+          Properties:
+            X: =0
+            Y: =90
+            Width: =Parent.Width
+            Height: =40
+            Align: =Align.Center
+            Size: =10
+            Color: =corSuave
+            Text: ="Nada precisando de atenção agora"
+            Visible: =CountRows(galAtencao.AllItems) = 0
+- conAprovacoes:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252 + (Parent.Width - 284 - 14) * 0.58 + 14
+      Y: =210
+      Width: =Parent.Width - 32 - (252 + (Parent.Width - 284 - 14) * 0.58 + 14)
+      Height: =200
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblAprovTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =10
+            Width: =Parent.Width - 36
+            Height: =30
+            Size: =12
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Aprovações pendentes"
+      - galAprovacoes:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =0
+            Y: =44
+            Width: =Parent.Width
+            Height: =Parent.Height - 48
+            TemplateSize: =52
+            TemplatePadding: =0
+            Items: =SortByColumns(nfPedidos, "DataPedido", SortOrder.Ascending)
+          Children:
+            - recApLinha:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =18
+                  Y: =0
+                  Width: =Parent.TemplateWidth - 36
+                  Height: =1
+                  Fill: =ColorValue("#EEF1F3")
+            - lblApTitulo:
+                Control: Label@2.5.1
+                Properties:
+                  X: =18
+                  Y: =6
+                  Width: =Parent.TemplateWidth - 18 - 168
+                  Height: =22
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =corTexto
+                  Text: =ThisItem.Title
+            - lblApSub:
+                Control: Label@2.5.1
+                Properties:
+                  X: =18
+                  Y: =26
+                  Width: =Parent.TemplateWidth - 18 - 168
+                  Height: =20
+                  Size: =8
+                  Color: =corSuave
+                  Text: |-
+                    =Coalesce(LookUp(nfSol, ID = ThisItem.SolicitacaoID).Codigo, "#" & ThisItem.SolicitacaoID) &
+                    "  ·  pedido por " & (If(CountRows(Split(Trim(ThisItem.SolicitadoPor.DisplayName), " ")) > 1, First(Split(Trim(ThisItem.SolicitadoPor.DisplayName), " ")).Value & " " & Last(Split(Trim(ThisItem.SolicitadoPor.DisplayName), " ")).Value, Trim(ThisItem.SolicitadoPor.DisplayName)))
+            - btnApRecusar:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =Parent.TemplateWidth - 164
+                  Y: =12
+                  Width: =70
+                  Height: =28
+                  Text: ="Recusar"
+                  Size: =9
+                  Fill: =Color.White
+                  HoverFill: =corVermelhoBg
+                  PressedFill: =corVermelhoBg
+                  Color: =corVermelho
+                  HoverColor: =corVermelho
+                  BorderColor: =corBordaForte
+                  BorderThickness: =1
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  Visible: =nfPapel = "Coordenador"
+                  OnSelect: |-
+                    =Patch(PedidosAlteracao, ThisItem, {
+                        StatusPedido: {Value: "Recusado"},
+                        DataDecisao: Now()
+                    });
+                    Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                        Title: "Alteração recusada: " & ThisItem.Title,
+                        SolicitacaoID: ThisItem.SolicitacaoID,
+                        Acao: {Value: "Comentário"},
+                        CampoAlterado: ThisItem.Campo.Value,
+                        ValorAnterior: ThisItem.ValorAtual,
+                        ValorNovo: ThisItem.ValorProposto,
+                        Usuario: nfEuPessoa,
+                        DataHora: Now()
+                    });
+                    Refresh(PedidosAlteracao);
+                    Notify("Pedido recusado", NotificationType.Information)
+            - btnApAprovar:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =Parent.TemplateWidth - 88
+                  Y: =12
+                  Width: =70
+                  Height: =28
+                  Text: ="Aprovar"
+                  Size: =9
+                  FontWeight: =FontWeight.Semibold
+                  Fill: =corPrimaria
+                  HoverFill: =corPrimariaEsc
+                  PressedFill: =corPrimariaEsc
+                  Color: =Color.White
+                  HoverColor: =Color.White
+                  BorderThickness: =0
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                  Visible: =nfPapel = "Coordenador"
+                  OnSelect: |-
+                    =With(
+                        {p: ThisItem, s: LookUp(SolicitacoesContrato, ID = ThisItem.SolicitacaoID)},
+                        Switch(p.Campo.Value,
+                            "PrazoAcordado", Patch(SolicitacoesContrato, s, {PrazoAcordado: DateValue(p.ValorProposto)}),
+                            "Prioridade", Patch(SolicitacoesContrato, s, {Prioridade: {Value: p.ValorProposto}}),
+                            "Status", Patch(SolicitacoesContrato, s, {Status: {Value: p.ValorProposto}})
+                        );
+                        Patch(PedidosAlteracao, p, {
+                            StatusPedido: {Value: "Aprovado"},
+                            DataDecisao: Now()
+                        });
+                        Patch(HistoricoSolicitacoes, Defaults(HistoricoSolicitacoes), {
+                            Title: "Alteração aprovada: " & p.Title,
+                            SolicitacaoID: p.SolicitacaoID,
+                            Acao: {Value: Switch(p.Campo.Value, "PrazoAcordado", "Prazo alterado", "Prioridade", "Prioridade alterada", "Status alterado")},
+                            CampoAlterado: p.Campo.Value,
+                            ValorAnterior: p.ValorAtual,
+                            ValorNovo: p.ValorProposto,
+                            Usuario: nfEuPessoa,
+                            DataHora: Now()
+                        })
+                    );
+                    Refresh(PedidosAlteracao);
+                    Refresh(SolicitacoesContrato);
+                    Notify("Alteração aprovada", NotificationType.Success)
+      - lblAprovVazio:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =60
+            Width: =Parent.Width - 36
+            Height: =40
+            Size: =10
+            Color: =corSuave
+            Text: ="Nenhum pedido de alteração aguardando"
+            Visible: =IsEmpty(nfPedidos)
+- conEquipe:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252 + (Parent.Width - 284 - 14) * 0.58 + 14
+      Y: =424
+      Width: =Parent.Width - 32 - (252 + (Parent.Width - 284 - 14) * 0.58 + 14)
+      Height: =Parent.Height - 424 - 20
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblEquipeTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =10
+            Width: =Parent.Width - 130
+            Height: =30
+            Size: =12
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Equipe"
+      - btnEquipeDistribuir:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =Parent.Width - 110
+            Y: =12
+            Width: =92
+            Height: =28
+            Text: ="Distribuir"
+            Align: =Align.Right
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 0, 0, 0)
+            PressedFill: =RGBA(0, 0, 0, 0)
+            Color: =corPrimaria
+            HoverColor: =corPrimariaEsc
+            BorderThickness: =0
+            OnSelect: =Navigate(scrDistribuicao, ScreenTransition.None)
+      - galEquipe:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =0
+            Y: =44
+            Width: =Parent.Width
+            Height: =Parent.Height - 44 - 40
+            TemplateSize: =40
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            Items: |-
+              =With(
+                  {abertas: Filter(nfSol, !Fechada)},
+                  With(
+                      {t: AddColumns(nfEquipe,
+                          Abertas, CountRows(Filter(abertas, RespEmail = Email)),
+                          Atr, CountRows(Filter(abertas, Atrasada && RespEmail = Email))
+                      )},
+                      AddColumns(t, Pct, If(Max(t, Abertas) = 0, 0, Abertas / Max(t, Abertas)))
+                  )
+              )
+          Children:
+            - btnEqAvatar:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =18
+                  Y: =6
+                  Width: =28
+                  Height: =28
+                  Text: =Upper(Left(ThisItem.Nome, 1) & Left(Last(Split(ThisItem.Nome, " ")).Value, 1))
+                  Size: =8
+                  FontWeight: =FontWeight.Bold
+                  Fill: =If(ThisItem.Email = nfEu, corPrimaria, corPrimariaClara)
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  Color: =If(ThisItem.Email = nfEu, Color.White, corPrimariaEsc)
+                  HoverColor: =Self.Color
+                  BorderThickness: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+            - lblEqNome:
+                Control: Label@2.5.1
+                Properties:
+                  X: =54
+                  Y: =0
+                  Width: =120
+                  Height: =Parent.TemplateHeight
+                  Size: =10
+                  Color: =corTexto
+                  Text: =If(ThisItem.Email = nfEu, "Você", ThisItem.Nome)
+            - recEqTrilho:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =180
+                  Y: =16
+                  Width: =Parent.TemplateWidth - 180 - 96
+                  Height: =8
+                  Fill: =ColorValue("#EEF1F3")
+            - recEqBarra:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =180
+                  Y: =16
+                  Width: =(Parent.TemplateWidth - 180 - 96) * ThisItem.Pct
+                  Height: =8
+                  Fill: =corPrimaria
+                  Visible: =ThisItem.Abertas > 0
+            - recEqBarraAtr:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =180
+                  Y: =16
+                  Width: =(Parent.TemplateWidth - 180 - 96) * ThisItem.Pct * If(ThisItem.Abertas = 0, 0, ThisItem.Atr / ThisItem.Abertas)
+                  Height: =8
+                  Fill: =corVermelho
+                  Visible: =ThisItem.Atr > 0
+            - lblEqQtd:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 90
+                  Y: =0
+                  Width: =72
+                  Height: =Parent.TemplateHeight
+                  Align: =Align.Right
+                  Size: =9
+                  Color: =If(ThisItem.Atr > 0, corVermelho, corTextoMedio)
+                  Text: =ThisItem.Abertas & If(ThisItem.Atr > 0, "  ·  " & ThisItem.Atr & " atr.", "")
+      - lblEqSemResp:
+          Control: Label@2.5.1
+          Properties:
+            X: =18
+            Y: =Parent.Height - 38
+            Width: =Parent.Width - 36
+            Height: =28
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corVermelho
+            Text: |-
+              ="Sem responsável: " & CountRows(Filter(nfSol, !Fechada && RespNome = "Sem responsável"))
+            Visible: =CountRows(Filter(nfSol, !Fechada && RespNome = "Sem responsável")) > 0

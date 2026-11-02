@@ -1,0 +1,671 @@
+- lblNvTitulo:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =10
+      Width: =900
+      Height: =32
+      Size: =15
+      FontWeight: =FontWeight.Semibold
+      Color: =corTexto
+      Text: ="Solicitação de demandas · Contratos e custos · Gerência Manutenção"
+- lblNvSub:
+    Control: Label@2.5.1
+    Properties:
+      X: =252
+      Y: =40
+      Width: =Parent.Width - 252 - 32
+      Height: =38
+      Size: =8
+      Color: =corSuave
+      Text: |-
+        ="Canal oficial para contratos, aditivos, requisições técnicas, solicitações de compra, análises de custos e atividades correlatas." & Char(10) &
+        "Solicitante: " & User().FullName & "  ·  " & Text(Today(), "dd/mm/yyyy") & "  ·  campos com * são obrigatórios"
+- recNvLinha:
+    Control: Rectangle@2.3.0
+    Properties:
+      X: =220
+      Y: =84
+      Width: =Parent.Width - 220
+      Height: =1
+      Fill: =corBorda
+- conNvForm:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =252
+      Y: =96
+      Width: =Parent.Width - 252 - 32 - 300 - 18
+      Height: =Parent.Height - 96 - 12
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblNvSec1:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =10
+            Width: =Parent.Width - 48
+            Height: =22
+            Size: =9
+            FontWeight: =FontWeight.Bold
+            Color: =corPrimariaEsc
+            Text: ="1 · SOBRE A DEMANDA"
+      - lblNvRotArea:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =34
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Área solicitante *"
+      - cbNvArea:
+          Control: Classic/ComboBox@2.4.0
+          Properties:
+            X: =24
+            Y: =54
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =36
+            Items: =Choices(SolicitacoesContrato.AreaSolicitante)
+            SelectMultiple: =false
+            IsSearchable: =false
+            InputTextPlaceholder: ="Selecione"
+            DefaultSelectedItems: =Blank()
+            Size: =10
+            BorderColor: =corBordaForte
+            Visible: =!varNvAreaOutra
+      - txtNvAreaOutra:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =24
+            Y: =54
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =36
+            Default: =""
+            HintText: ="Digite a área"
+            Size: =10
+            BorderColor: =corBordaForte
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            Visible: =varNvAreaOutra
+      - btnNvAreaOutra:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24
+            Y: =90
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =22
+            Text: =If(varNvAreaOutra, "← Escolher da lista", "Outra área (não está na lista)")
+            Align: =Align.Left
+            PaddingLeft: =0
+            Size: =8
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 0, 0, 0)
+            PressedFill: =RGBA(0, 0, 0, 0)
+            Color: =corPrimaria
+            HoverColor: =corPrimariaEsc
+            BorderThickness: =0
+            OnSelect: =Set(varNvAreaOutra, !varNvAreaOutra); Reset(cbNvArea); Reset(txtNvAreaOutra)
+      - lblNvRotTipo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24 + (Parent.Width - 48 - 14) / 2 + 14
+            Y: =34
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Tipo de demanda *"
+      - cbNvTipo:
+          Control: Classic/ComboBox@2.4.0
+          Properties:
+            X: =24 + (Parent.Width - 48 - 14) / 2 + 14
+            Y: =54
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =36
+            Items: =Choices(SolicitacoesContrato.TipoDemanda)
+            SelectMultiple: =false
+            IsSearchable: =false
+            InputTextPlaceholder: ="Selecione"
+            DefaultSelectedItems: =Blank()
+            Size: =10
+            BorderColor: =corBordaForte
+            Visible: =!varNvTipoOutro
+      - txtNvTipoOutro:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =24 + (Parent.Width - 48 - 14) / 2 + 14
+            Y: =54
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =36
+            Default: =""
+            HintText: ="Digite o tipo de demanda"
+            Size: =10
+            BorderColor: =corBordaForte
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            Visible: =varNvTipoOutro
+      - btnNvTipoOutro:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24 + (Parent.Width - 48 - 14) / 2 + 14
+            Y: =90
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =22
+            Text: =If(varNvTipoOutro, "← Escolher da lista", "Outro tipo (não está na lista)")
+            Align: =Align.Left
+            PaddingLeft: =0
+            Size: =8
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 0, 0, 0)
+            PressedFill: =RGBA(0, 0, 0, 0)
+            Color: =corPrimaria
+            HoverColor: =corPrimariaEsc
+            BorderThickness: =0
+            OnSelect: =Set(varNvTipoOutro, !varNvTipoOutro); Reset(cbNvTipo); Reset(txtNvTipoOutro)
+      - lblNvRotClass:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =116
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Classificação Opex ou Capex? *"
+      - galNvClass:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            X: =24
+            Y: =136
+            Width: =Min(260, (Parent.Width - 48 - 14) / 2)
+            Height: =38
+            TemplateSize: =Self.Width / 2
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            Items: =["OPEX", "CAPEX"]
+          Children:
+            - btnNvClass:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth - 4
+                  Height: =36
+                  Text: =ThisItem.Value
+                  Size: =10
+                  FontWeight: =If(varNvClass = ThisItem.Value, FontWeight.Semibold, FontWeight.Normal)
+                  Fill: =If(varNvClass = ThisItem.Value, corPrimaria, Color.White)
+                  HoverFill: =If(varNvClass = ThisItem.Value, corPrimaria, corColuna)
+                  PressedFill: =corPrimariaClara
+                  Color: =If(varNvClass = ThisItem.Value, Color.White, corTexto)
+                  HoverColor: =Self.Color
+                  BorderColor: =corBordaForte
+                  BorderThickness: =If(varNvClass = ThisItem.Value, 0, 1)
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  OnSelect: =Set(varNvClass, ThisItem.Value)
+      - lblNvClassAjuda:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =174
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =20
+            Size: =8
+            Color: =corSuave
+            Text: |-
+              ="Opex: custeio da operação  ·  Capex: investimento"
+      - lblNvRotFiscal:
+          Control: Label@2.5.1
+          Properties:
+            X: =24 + (Parent.Width - 48 - 14) / 2 + 14
+            Y: =116
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Fiscal do serviço / contrato *"
+      - cbNvFiscal:
+          Control: Classic/ComboBox@2.4.0
+          Properties:
+            X: =24 + (Parent.Width - 48 - 14) / 2 + 14
+            Y: =136
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =36
+            Items: |-
+              =With(
+                  {termo: Trim(cbNvFiscal.SearchText)},
+                  If(
+                      Len(termo) < 3,
+                      Blank(),
+                      Filter(
+                          Office365Users.SearchUserV2({
+                              searchTerm: First(Split(termo, " ")).Value,
+                              top: 100
+                          }).value As u,
+                          !IsBlank(u.Mail) &&
+                          CountRows(Filter(Split(termo, " ") As w, !(Lower(w.Value) in Lower(u.DisplayName)))) = 0
+                      )
+                  )
+              )
+            SelectMultiple: =false
+            IsSearchable: =true
+            DisplayFields: =["DisplayName"]
+            SearchFields: =["DisplayName"]
+            InputTextPlaceholder: =If(chkNvFiscalNA.Value, "Não se aplica", "Digite o nome do fiscal")
+            DefaultSelectedItems: =Blank()
+            Size: =10
+            BorderColor: =corBordaForte
+            DisplayMode: =If(chkNvFiscalNA.Value, DisplayMode.Disabled, DisplayMode.Edit)
+      - chkNvFiscalNA:
+          Control: Classic/CheckBox@2.1.0
+          Properties:
+            X: =20 + (Parent.Width - 48 - 14) / 2 + 14
+            Y: =172
+            Width: =(Parent.Width - 48 - 14) / 2
+            Height: =24
+            Default: =false
+            Size: =8
+            Color: =corSuave
+            CheckboxSize: =16
+            CheckboxBorderColor: =corBordaForte
+            CheckmarkFill: =corPrimaria
+            Text: ="Não se aplica (N/A)"
+            OnCheck: =Reset(cbNvFiscal)
+      - lblNvRotDesc:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =198
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Descrição / objeto da solicitação *"
+      - txtNvDesc:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =24
+            Y: =218
+            Width: =Parent.Width - 48
+            Height: =48
+            Mode: =TextMode.MultiLine
+            Default: =""
+            HintText: |-
+              ="Ex.: Novo BID casa dos motores"
+            Size: =10
+            BorderColor: =corBordaForte
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+      - recNvSep1:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =24
+            Y: =278
+            Width: =Parent.Width - 48
+            Height: =1
+            Fill: =ColorValue("#EEF1F3")
+      - lblNvSec2:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =286
+            Width: =Parent.Width - 48
+            Height: =22
+            Size: =9
+            FontWeight: =FontWeight.Bold
+            Color: =corPrimariaEsc
+            Text: ="2 · PRAZO E PRIORIDADE"
+      - lblNvRotPrazo:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =310
+            Width: =200
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Prazo desejado para atendimento *"
+      - dpNvPrazo:
+          Control: Classic/DatePicker@2.6.0
+          Properties:
+            X: =24
+            Y: =330
+            Width: =200
+            Height: =36
+            DefaultDate: =Blank()
+            Format: ="dd/mm/yyyy"
+            Language: ="pt-BR"
+            InputTextPlaceholder: ="dd/mm/aaaa"
+            Size: =10
+            BorderColor: =If(!IsBlank(dpNvPrazo.SelectedDate) && dpNvPrazo.SelectedDate < Today(), corVermelho, corBordaForte)
+      - lblNvPrazoErro:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =366
+            Width: =200
+            Height: =18
+            Size: =8
+            Color: =corVermelho
+            Text: ="A data não pode ser no passado"
+            Visible: =!IsBlank(dpNvPrazo.SelectedDate) && dpNvPrazo.SelectedDate < Today()
+      - lblNvRotPrio:
+          Control: Label@2.5.1
+          Properties:
+            X: =244
+            Y: =310
+            Width: =Parent.Width - 244 - 24
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Prioridade *"
+      - galNvPrio:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            X: =244
+            Y: =330
+            Width: =Min(480, Parent.Width - 244 - 24)
+            Height: =38
+            TemplateSize: =Self.Width / 4
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            Items: =nfPrioridades
+          Children:
+            - btnNvPrio:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth - 4
+                  Height: =36
+                  Text: =ThisItem.Rotulo
+                  Size: =9
+                  FontWeight: =If(varNvPrio = ThisItem.Valor, FontWeight.Semibold, FontWeight.Normal)
+                  PaddingLeft: =2
+                  PaddingRight: =2
+                  Fill: =If(varNvPrio = ThisItem.Valor, ThisItem.Fundo, Color.White)
+                  HoverFill: =If(varNvPrio = ThisItem.Valor, ThisItem.Fundo, corColuna)
+                  PressedFill: =ThisItem.Fundo
+                  Color: =If(varNvPrio = ThisItem.Valor, ThisItem.Cor, corTexto)
+                  HoverColor: =Self.Color
+                  BorderColor: =corBordaForte
+                  BorderThickness: =1
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  OnSelect: =Set(varNvPrio, ThisItem.Valor)
+      - lblNvRotJust:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =384
+            Width: =Parent.Width - 48
+            Height: =20
+            Size: =9
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="Justificativa do prazo / impacto da não realização *"
+      - txtNvJust:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =24
+            Y: =404
+            Width: =Parent.Width - 48
+            Height: =44
+            Mode: =TextMode.MultiLine
+            Default: =""
+            HintText: |-
+              ="Ex.: CT sem saldo"
+            Size: =10
+            BorderColor: =corBordaForte
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+      - recNvSep2:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =24
+            Y: =460
+            Width: =Parent.Width - 48
+            Height: =1
+            Fill: =ColorValue("#EEF1F3")
+      - lblNvSec3:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =468
+            Width: =Parent.Width - 48
+            Height: =22
+            Size: =9
+            FontWeight: =FontWeight.Bold
+            Color: =corPrimariaEsc
+            Text: ="3 · DOCUMENTOS DE SUPORTE À SOLICITAÇÃO *"
+      - lblNvAnexoAjuda:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =488
+            Width: =Parent.Width - 48
+            Height: =30
+            Size: =8
+            Color: =corSuave
+            Text: ="RT, escopo técnico, contrato vigente, propostas, planilhas ou outros arquivos aplicáveis  ·  até 10 arquivos"
+      - recNvAnexoArea:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =24
+            Y: =518
+            Width: =Parent.Width - 48
+            Height: =Parent.Height - 518 - 14
+            Fill: =ColorValue("#FAFBFC")
+            BorderColor: =corBordaForte
+            BorderThickness: =1
+            BorderStyle: =BorderStyle.Dashed
+- conNvDepois:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =Parent.Width - 32 - 300
+      Y: =96
+      Width: =300
+      Height: =196
+      Fill: =Color.White
+      BorderColor: =corBorda
+      BorderThickness: =1
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+    Children:
+      - lblNvDepTitulo:
+          Control: Label@2.5.1
+          Properties:
+            X: =16
+            Y: =10
+            Width: =Parent.Width - 32
+            Height: =28
+            Size: =11
+            FontWeight: =FontWeight.Semibold
+            Color: =corTexto
+            Text: ="O que acontece depois"
+      - galNvPassos:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =10
+            Y: =42
+            Width: =Parent.Width - 20
+            Height: =150
+            TemplateSize: =48
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            Items: |-
+              =Table(
+                  {N: 1, T: "A coordenação de contratos recebe e faz a triagem"},
+                  {N: 2, T: "Um responsável é definido e o prazo é confirmado"},
+                  {N: 3, T: "Você recebe um e-mail quando for concluída ou quando o responsável mandar mensagem"}
+              )
+          Children:
+            - btnNvPassoNum:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =6
+                  Y: =4
+                  Width: =24
+                  Height: =24
+                  Text: =ThisItem.N
+                  Size: =8
+                  FontWeight: =FontWeight.Bold
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  Fill: =If(ThisItem.N = 1, corPrimaria, corPrimariaClara)
+                  HoverFill: =Self.Fill
+                  PressedFill: =Self.Fill
+                  Color: =If(ThisItem.N = 1, Color.White, corPrimariaEsc)
+                  HoverColor: =Self.Color
+                  BorderThickness: =0
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+            - lblNvPassoTxt:
+                Control: Label@2.5.1
+                Properties:
+                  X: =38
+                  Y: =0
+                  Width: =Parent.TemplateWidth - 44
+                  Height: =44
+                  Size: =9
+                  VerticalAlign: =VerticalAlign.Top
+                  Color: =corTextoMedio
+                  Text: =ThisItem.T
+- lblNvFaltando:
+    Control: Label@2.5.1
+    Properties:
+      X: =Parent.Width - 32 - 300
+      Y: =306
+      Width: =300
+      Height: =Parent.Height - 306 - 12 - 40 - 10 - 46 - 14
+      Size: =9
+      VerticalAlign: =VerticalAlign.Top
+      Color: =ColorValue("#6B4E00")
+      Fill: =ColorValue("#FDF6E7")
+      BorderColor: =ColorValue("#F0D9A8")
+      BorderThickness: =1
+      PaddingLeft: =14
+      PaddingRight: =14
+      PaddingTop: =12
+      Text: |-
+        =With(
+            {falta: Filter(
+                Table(
+                    {Campo: "Área solicitante", Ok: If(varNvAreaOutra, !IsBlank(Trim(txtNvAreaOutra.Text)), !IsBlank(cbNvArea.Selected.Value))},
+                    {Campo: "Tipo de demanda", Ok: If(varNvTipoOutro, !IsBlank(Trim(txtNvTipoOutro.Text)), !IsBlank(cbNvTipo.Selected.Value))},
+                    {Campo: "Classificação Opex ou Capex", Ok: !IsBlank(varNvClass)},
+                    {Campo: "Fiscal do serviço (ou marcar N/A)", Ok: chkNvFiscalNA.Value || !IsBlank(cbNvFiscal.Selected.Mail)},
+                    {Campo: "Descrição", Ok: !IsBlank(Trim(txtNvDesc.Text))},
+                    {Campo: "Prazo desejado (hoje ou depois)", Ok: !IsBlank(dpNvPrazo.SelectedDate) && dpNvPrazo.SelectedDate >= Today()},
+                    {Campo: "Justificativa do prazo", Ok: !IsBlank(Trim(txtNvJust.Text))},
+                    {Campo: "Pelo menos um documento anexado", Ok: CountRows(attNova.Attachments) > 0},
+                    {Campo: "Prioridade", Ok: !IsBlank(varNvPrio)}
+                ),
+                !Ok
+            )},
+            If(IsEmpty(falta),
+                "Tudo pronto. Pode enviar.",
+                "Falta preencher:" & Char(10) & Concat(falta, "•  " & Campo, Char(10))
+            )
+        )
+- btnNvEnviar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 300
+      Y: =Parent.Height - 12 - 40 - 10 - 46
+      Width: =300
+      Height: =46
+      Text: =If(varNvEnviando, "Enviando…", "Enviar solicitação")
+      Size: =11
+      FontWeight: =FontWeight.Semibold
+      Fill: =corPrimaria
+      HoverFill: =corPrimariaEsc
+      PressedFill: =corPrimariaEsc
+      Color: =Color.White
+      HoverColor: =Color.White
+      DisabledFill: =corBordaForte
+      DisabledColor: =Color.White
+      BorderThickness: =0
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      DisplayMode: =If(varNvEnviando || lblNvFaltando.Text <> "Tudo pronto. Pode enviar.", DisplayMode.Disabled, DisplayMode.Edit)
+      OnSelect: |-
+        =Set(varNvEnviando, true);
+        Set(varNvDados, {
+            tipo: If(varNvTipoOutro, Trim(txtNvTipoOutro.Text), cbNvTipo.Selected.Value),
+            area: If(varNvAreaOutra, Trim(txtNvAreaOutra.Text), cbNvArea.Selected.Value),
+            fiscalNA: chkNvFiscalNA.Value,
+            fiscalNome: cbNvFiscal.Selected.DisplayName,
+            fiscalMail: Lower(cbNvFiscal.Selected.Mail),
+            desc: Trim(txtNvDesc.Text),
+            prazo: dpNvPrazo.SelectedDate,
+            just: Trim(txtNvJust.Text),
+            prio: varNvPrio,
+            classe: varNvClass
+        });
+        SubmitForm(frmAnexo)
+- btnNvCancelar:
+    Control: Classic/Button@2.2.0
+    Properties:
+      X: =Parent.Width - 32 - 300
+      Y: =Parent.Height - 12 - 40
+      Width: =300
+      Height: =40
+      Text: ="Cancelar"
+      Size: =10
+      Fill: =Color.White
+      HoverFill: =corColuna
+      PressedFill: =corPrimariaClara
+      Color: =corTexto
+      HoverColor: =corTexto
+      BorderColor: =corBordaForte
+      BorderThickness: =1
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      OnSelect: |-
+        =Reset(cbNvTipo); Reset(txtNvTipoOutro); Reset(cbNvArea); Reset(txtNvAreaOutra);
+        Reset(cbNvFiscal); Reset(chkNvFiscalNA);
+        Reset(txtNvDesc); Reset(dpNvPrazo); Reset(txtNvJust); ResetForm(frmAnexo);
+        Set(varNvPrio, Blank()); Set(varNvClass, Blank());
+        Set(varNvTipoOutro, false); Set(varNvAreaOutra, false);
+        Navigate(scrMinhas, ScreenTransition.None)
